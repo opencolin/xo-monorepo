@@ -21,7 +21,7 @@ xo/
 ├── services/    ← Python backends (FastAPI control plane, MCP server, autonomous org)
 ├── agents/      ← agent runtime kits, shared prompts, n8n automations
 ├── content/     ← static content + the "universe" observatory
-├── packages/    ← reserved for shared TS packages (empty today)
+├── packages/    ← shared TS packages (@xo/types, @xo/tsconfig)
 └── docs/        ← monorepo-level docs  →  see docs/ARCHITECTURE.md
 ```
 
@@ -146,6 +146,7 @@ cd services/ethcc-hack-xo-ember && pip install -r requirements.txt && python xo_
 ## Monorepo layout & tooling
 
 - **Package manager:** pnpm workspaces — `apps/*` and `packages/*` are members (see [`pnpm-workspace.yaml`](pnpm-workspace.yaml)). `services/`, `agents/`, and `content/` are intentionally **not** JS workspace members; they keep their own toolchains.
+- **Shared code:** [`packages/`](packages) holds `@xo/types` (platform types) and `@xo/tsconfig` (base TS config). `apps/xo-org` consumes `@xo/types` via `@/lib/xo-types` as a worked example.
 - **Task runner:** [Turborepo](turbo.json) — `build`, `dev`, `start`, `lint`, `typecheck`, `format`, `clean` fan out across web apps with caching.
 - **One lockfile:** the root [`pnpm-lock.yaml`](pnpm-lock.yaml) is the single source of truth; per‑app lockfiles were removed during assembly.
 - **Build scripts:** native deps ship prebuilt binaries, so dependency build scripts are disabled by default for fast, deterministic installs (`allowBuilds` in `pnpm-workspace.yaml`).

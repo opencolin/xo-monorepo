@@ -192,6 +192,7 @@ Packaged with `uv` / hatchling (`xo-mcp-server` entry point).
 - **Original project docs are authoritative for detail** — each subproject keeps
   its README, `AGENTS.md`/`CLAUDE.md`, and planning docs (xo-via in particular
   ships an extensive `*_PLAN.md` set describing its roadmap).
-- **`packages/`** is reserved for code shared across apps (design tokens, types,
-  UI). Empty today; add shared TS packages here and reference them as
-  `workspace:*` dependencies.
+- **`packages/`** holds code shared across apps. Today: `@xo/types` (platform
+  types — runtimes, modes, message addressing) and `@xo/tsconfig` (base TS
+  config). `apps/xo-org` consumes `@xo/types` via `@/lib/xo-types`. Add more and
+  reference them as `workspace:*` dependencies.
