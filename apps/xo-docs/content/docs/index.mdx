@@ -1,0 +1,170 @@
+---
+title: XO Workspace
+description: The home for your AI Agent Team.
+---
+
+import { Cards, Card } from "@/components/card";
+import { ShaderBackground } from "@/components/hero-shader";
+
+{/* ── Hero ─────────────────────────────────────────────────────────── */}
+
+<div className="not-prose mb-16 pb-20 pt-20 text-center relative isolate overflow-hidden rounded-2xl">
+	<ShaderBackground opacity={0.9} />
+	<div className="mb-4 inline-flex items-center gap-2 rounded-full border border-fd-border/70 bg-fd-muted/60 px-3 py-1 text-xs font-medium text-fd-muted-foreground">
+		<span className="inline-block size-1.5 rounded-full bg-fd-primary" />
+		Public Beta — Free to start
+	</div>
+	<h1 className="mb-4 text-4xl font-bold tracking-tight text-fd-foreground sm:text-6xl">
+		Launch your <span className="text-fd-primary">AI Agent Team</span>
+	</h1>
+	<div className="mx-auto mb-10 max-w-lg px-4 sm:px-0 text-sm sm:text-lg text-fd-muted-foreground">
+		Secure, isolated remote environments for your AI agents. No local setup, no
+		infra to manage — pick a template and your agent is live.
+	</div>
+	<div className="flex flex-wrap items-center justify-center gap-3">
+		<a
+			href="/getting-started/create-account"
+			className="flex items-center gap-2 rounded-lg bg-fd-primary px-5 py-2.5 text-sm font-semibold text-fd-primary-foreground transition-opacity hover:opacity-90"
+		>
+			Get Started
+		</a>
+		<a
+			href="/agents"
+			className="inline-flex items-center gap-2 rounded-lg border border-fd-border bg-fd-background px-5 py-2.5 text-sm font-semibold text-fd-foreground transition-colors hover:bg-fd-muted"
+		>
+			Explore Agents
+		</a>
+	</div>
+</div>
+
+{/* ── Deploy in 3 steps ────────────────────────────────────────────── */}
+
+<div className="not-prose mb-14 rounded-2xl">
+	<h2 className="mb-4 text-xl font-semibold text-fd-foreground">
+		Deploy in 3 steps
+	</h2>
+	<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+		<div className="rounded-xl bg-fd-card p-6">
+			<div className="mb-4 flex size-9 items-center justify-center rounded-full bg-fd-primary/10 text-sm font-bold text-fd-primary">
+				1
+			</div>
+			<div className="mb-1.5 font-semibold text-fd-foreground">
+				Create a Project
+			</div>
+			<div className="text-sm leading-relaxed text-fd-muted-foreground">
+				Every agent runs inside a project — a secure, sandboxed environment in
+				the cloud.
+			</div>
+		</div>
+		<div className="rounded-xl bg-fd-card p-6">
+			<div className="mb-4 flex size-9 items-center justify-center rounded-full bg-fd-primary/10 text-sm font-bold text-fd-primary">
+				2
+			</div>
+			<div className="mb-1.5 font-semibold text-fd-foreground">
+				Choose your Agent
+			</div>
+			<div className="text-sm leading-relaxed text-fd-muted-foreground">
+				Pick a pre-configured template (OpenClaw, Claude Code) or bring your
+				own.
+			</div>
+		</div>
+		<div className="rounded-xl bg-fd-card p-6">
+			<div className="mb-4 flex size-9 items-center justify-center rounded-full bg-fd-primary/10 text-sm font-bold text-fd-primary">
+				3
+			</div>
+			<div className="mb-1.5 font-semibold text-fd-foreground">Launch</div>
+			<div className="text-sm leading-relaxed text-fd-muted-foreground">
+				Your agent spins up instantly in a secure remote environment, ready to
+				work.
+			</div>
+		</div>
+	</div>
+</div>
+
+{/* ── Agents ───────────────────────────────────────────────────────── */}
+
+## Choose an Agent
+
+<Cards>
+	<Card
+		icon={<BrandIcon name="openclaw" size={24} />}
+		title="OpenClaw"
+		description="AI agent gateway with Telegram, WhatsApp, and Slack support. Built-in skills and integrations."
+		href="/agents/openclaw"
+	/>
+	<Card
+		icon={<BrandIcon name="claude-code" size={24} />}
+		title="Claude Code"
+		description="AI-assisted software development, running in your secure XO environment."
+		href="/agents/claude-code"
+	/>
+	<Card
+		icon={<BrandIcon name="hermes" size={24} />}
+		title="Hermes"
+		description="Messaging agent with Telegram, WhatsApp, and Slack support."
+		href="/agents/hermes"
+	/>
+	<Card
+		icon={<BrandIcon name="xo-cowork" size={24} />}
+		title="XO Cowork"
+		description="Chat-first AI workspace with per-project memory and multi-channel reach."
+		href="/agents/xo-cowork"
+	/>
+</Cards>
+
+{/* ── Why XO ───────────────────────────────────────────────────────── */}
+
+<div className="not-prose mt-14 mb-14 rounded-2xl">
+	<h2 className="mb-4 text-xl font-semibold text-fd-foreground">
+		Why XO Workspace
+	</h2>
+	<div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+		<div className="rounded-xl bg-fd-card p-6">
+			<span className="icon-[ph--shield-check] size-6 mb-3 text-fd-primary" />
+			<div className="mb-1.5 font-semibold text-fd-foreground">
+				Secure by Default
+			</div>
+			<div className="text-sm leading-relaxed text-fd-muted-foreground">
+				Every project runs in an isolated environment — your agent never touches
+				your local machine.
+			</div>
+		</div>
+		<div className="rounded-xl bg-fd-card p-6">
+			<span className="icon-[ph--lightning] size-6 mb-3 text-fd-primary" />
+			<div className="mb-1.5 font-semibold text-fd-foreground">Zero Setup</div>
+			<div className="text-sm leading-relaxed text-fd-muted-foreground">
+				Pre-configured templates mean your agent is ready the moment you launch.
+				No dependency hell.
+			</div>
+		</div>
+		<div className="rounded-xl bg-fd-card p-6">
+			<span className="icon-[ph--robot] size-6 mb-3 text-fd-primary" />
+			<div className="mb-1.5 font-semibold text-fd-foreground">
+				One Dashboard
+			</div>
+			<div className="text-sm leading-relaxed text-fd-muted-foreground">
+				Manage all your agents from a single workspace. Monitor, restart, and
+				share with collaborators.
+			</div>
+		</div>
+	</div>
+</div>
+
+{/* ── Explore ──────────────────────────────────────────────────────── */}
+
+## Explore the Docs
+
+<Cards>
+	<Card
+		icon={<span className="icon-[ph--book-open-fill] size-6" />}
+		title="Getting Started"
+		description="Account creation, dashboard navigation, machine management, and project sharing."
+		href="/getting-started"
+	/>
+	<Card
+		icon={<BrandIcon name="openclaw" size={24} />}
+		title="OpenClaw"
+		description="Setup, channels, models, skills, integrations, and troubleshooting."
+		href="/agents/openclaw"
+	/>
+</Cards>

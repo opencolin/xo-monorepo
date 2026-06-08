@@ -1,0 +1,61 @@
+---
+title: Devin
+icon: Devin
+description: Connect the XO MCP Server to Devin AI via the MCP Marketplace.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Connect XO to [Devin AI](https://devin.ai) using Devin's MCP Marketplace.
+
+<Steps>
+  <Step>
+    ### Open Devin AI Settings
+
+    In Devin, go to **Settings → MCP Marketplace** and click **Configure MCP server**.
+  </Step>
+
+  <Step>
+    ### Add the XO MCP Server
+
+    Fill in the fields:
+
+    - **Server Name:** `XO`
+    - **Slug:** auto-generated (`xo`)
+    - **Transport Type:** Select **SSE**
+    - **Short Description:** `XO MCP server allows to update and talk to knowledge bases`
+    - **Enabled:** Toggle ON
+  </Step>
+
+  <Step>
+    ### Configure the Server URL
+
+    Under **SSE Configuration**:
+
+    - **Server URL:**
+      ```
+      https://dev-xo-mcp-sse-server-xo-nclz7e.hello-xo.nl/mcp
+      ```
+    - **Authentication:** `None`
+    - **Custom Headers:** Leave empty
+  </Step>
+
+  <Step>
+    ### Add Secrets (Optional)
+
+    If your XO MCP server requires an API key or deployment ID, add it as a secret:
+
+    1. Click **+ Add a new secret**
+    2. Save your secret as `Bearer YOUR_API_TOKEN_NAME`
+  </Step>
+
+  <Step>
+    ### Validate the Connection
+
+    Click **Validate**. You should see "MCP server validation successful". The Tool List will show all available XO tools.
+  </Step>
+</Steps>
+
+## Using XO in Devin AI
+
+Once connected, Devin can deploy apps, start/stop/remove them, check logs, expose services, update knowledge bases, and ask contextual questions — all via XO MCP.

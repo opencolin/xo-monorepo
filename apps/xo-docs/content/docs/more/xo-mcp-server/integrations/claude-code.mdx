@@ -1,0 +1,54 @@
+---
+title: Claude Code
+icon: ClaudeCode
+description: Add the XO MCP Server to Claude Code with a single terminal command.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Connect XO to Claude Code so you can build, push, and deploy directly from your terminal.
+
+## Prerequisites
+
+- Claude Code (latest)
+- **ACCESS\_TOKEN** and **DEPLOYMENT\_ID** from XO Launchpad
+- `uvx` installed
+  - macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+  - Windows (PowerShell): `irm https://astral.sh/uv/install.ps1 | iex`
+
+## Connect XO MCP to Claude Code
+
+Run this in your project folder:
+
+```bash
+claude mcp add XO-MCP -e ACCESS_TOKEN=<access_token> -e DEPLOYMENT_ID=<deployment_id> -- uvx git+https://github.com/sharmasuraj0123/xo-mcp-server.git
+```
+
+Replace `<access_token>` and `<deployment_id>` with your credentials from XO Launchpad.
+
+Verify the connection:
+
+```bash
+claude mcp list
+```
+
+## Add Runbooks to CLAUDE.md
+
+Copy the Docker commands from XO Launchpad into your `CLAUDE.md` file. This lets Claude Code run deployment commands automatically.
+
+## Deploy to XO
+
+1. Run the Docker commands in Claude Code first
+2. Once Docker commands finish, type **"Deploy to XO"** in Claude Code
+3. The MCP triggers the full XO deployment process automatically
+
+## Handling Timeout Errors
+
+Timeout errors come from Claude Code itself, not the XO MCP. If this happens:
+
+- Re-run the Docker command in Claude Code, or
+- Run the Docker command separately in your terminal
+
+<Callout type="info">
+  After Docker commands finish, type "Deploy to XO" in Claude Code. Your application goes live automatically.
+</Callout>

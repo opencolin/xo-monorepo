@@ -1,0 +1,50 @@
+---
+title: XO MCP Server
+description: Connect XO to Cursor, Claude, Devin, ChatGPT, and more via the Model Context Protocol.
+icon: Plug2
+---
+
+import { Cards, Card } from "@/components/card";
+
+The XO MCP Server integrates with the XO platform via the Model Context Protocol — giving your AI tools direct control over container deployments and application lifecycle.
+
+<Cards>
+  <Card
+    icon={<span className="icon-[ph--info] size-4.5 text-green-400" />}
+    title="Overview"
+    description="Available tools and technical architecture."
+    href="/more/xo-mcp-server/overview"
+  />
+  <Card
+    icon={<span className="icon-[ph--gear] size-4.5 text-green-400" />}
+    title="Setup"
+    description="Install from GitHub or run locally. Configure credentials."
+    href="/more/xo-mcp-server/setup"
+  />
+  <Card
+    icon={<span className="icon-[ph--puzzle-piece] size-4.5 text-green-400" />}
+    title="Integrations"
+    description="Connect to Cursor, Claude, Claude Code, ChatGPT, Devin, and Manus."
+    href="/more/xo-mcp-server/integrations"
+  />
+</Cards>
+
+## Available Tools
+
+| Tool | Description |
+|---|---|
+| `deploy_to_xo` | Push a containerised app to XO |
+| `start_xo_app` | Activate a previously deployed application |
+| `stop_xo_app` | Halt a running app without deleting it |
+| `remove_xo_app` | Completely remove an application |
+| `get_xo_app_logs` | Access real-time application logs |
+| `expose_xo_app` | Expose a service with a public URL |
+| `update_knowledgebase_using_text` | Update an XO Workspaces knowledge base |
+| `ask_question` | Query a knowledge base |
+
+## Requirements
+
+- Python 3.11+
+- `uvx` package manager
+- Valid XO credentials: `ACCESS_TOKEN` and `DEPLOYMENT_ID` from XO Launchpad
+- An MCP-compatible client (Cursor, Claude, Devin, etc.)

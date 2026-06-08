@@ -1,0 +1,121 @@
+---
+title: v0-vercel
+description: Full programmatic control over the Vercel v0 platform from OpenClaw. Generate UI/app code with AI, manage projects and chats, deploy to Vercel, and monitor your account.
+icon: V0
+---
+
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Accordions, Accordion } from "fumadocs-ui/components/accordion";
+
+Full programmatic control over the [Vercel v0](https://v0.dev) platform from [OpenClaw](/agents/openclaw). Generate UI/app code with AI, manage projects and chats, deploy to [Vercel](https://vercel.com), and monitor your account, all from a single skill.
+
+## What This Skill Can Do
+
+<Accordions>
+	<Accordion title="Generate UI/App Code with AI">
+		- Start a chat with a text prompt and v0 generates a complete React/Next.js
+		app - Attach a screenshot (`--image`) to generate code that matches an
+		existing design - Stream responses in real-time for long generations - Send
+		follow-up messages to iterate — add features, fix bugs, change styling -
+		Fork a chat to explore a different direction without losing the original
+	</Accordion>
+	<Accordion title="Manage Projects & Chats">
+		- Organize chats into named projects - List, rename, and delete projects and
+		chats - Bookmark (favorite) chats you want to keep - Download the generated
+		code files from any chat
+	</Accordion>
+	<Accordion title="Deploy to Vercel">
+		- Deploy generated code directly to Vercel with one command - Check
+		deployment status and view build logs for debugging
+	</Accordion>
+	<Accordion title="GitHub Integration">
+		- Link an existing Vercel/GitHub project to v0 - Changes auto-commit to a
+		branch; deploying triggers a PR and production build
+	</Accordion>
+	<Accordion title="Manage Environment Variables">
+		- Add, update, list, and delete env vars scoped to a project
+	</Accordion>
+	<Accordion title="Account & Monitoring">
+		- Check your billing plan and remaining credits - View API rate limits
+		before running bulk operations - See your API permissions/scopes
+	</Accordion>
+</Accordions>
+
+## Installation & Setup
+
+<Steps>
+  <Step>
+    ### Clone the Skill
+
+    Navigate to your OpenClaw skills directory and clone the [v0skill repository](https://github.com/SAGARRAMBADE21/v0skill):
+
+    ```bash
+    cd ~/.openclaw/workspace/skills/
+    git clone https://github.com/SAGARRAMBADE21/v0skill.git v0-vercel
+    ```
+
+    <Callout type="info">
+      Folder name must be `v0-vercel`.
+    </Callout>
+
+  </Step>
+  <Step>
+    ### Get Your API Key
+
+    Go to [v0.dev/chat/settings/keys](https://v0.dev/chat/settings/keys) and generate an API key.
+
+  </Step>
+  <Step>
+    ### Configure Your API Key
+
+    Choose one of the following methods:
+
+    **Method 1: OpenClaw config** (`~/.openclaw/openclaw.json`)
+
+    ```json
+    {
+      "skills": {
+        "entries": {
+          "v0-vercel": {
+            "enabled": true,
+            "env": {
+              "V0_API_KEY": "your_v0_api_key_here"
+            }
+          }
+        }
+      }
+    }
+    ```
+
+    Then refresh skills:
+
+    `/refresh skills`
+
+    **Method 2: Shell profile**
+
+    ```bash
+    echo 'export V0_API_KEY="your_actual_key_here"' >> ~/.bash_profile
+    source ~/.bash_profile
+    ```
+
+    Verify it worked:
+
+    ```bash
+    echo $V0_API_KEY
+    ```
+
+    You should see your key printed back.
+
+  </Step>
+</Steps>
+
+## Error Reference
+
+| Error                   | Cause                   | Fix                     |
+| ----------------------- | ----------------------- | ----------------------- |
+| `401 Unauthorized`      | Invalid/missing API key | Check `V0_API_KEY`      |
+| `429 Too Many Requests` | Rate limit hit          | Run `rate-limits`, wait |
+| `project_not_found`     | Bad project ID          | Run `list-projects`     |
+| `chat_not_found`        | Bad chat ID             | Run `list-chats`        |
+| `insufficient_credits`  | Out of credits          | Upgrade plan            |

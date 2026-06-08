@@ -1,0 +1,97 @@
+---
+title: Setup
+description: Create a Claude Code project on XO, authenticate Claude, and open your editor.
+icon: Rocket
+---
+
+import { VideoEmbed } from '@/components/video-embed';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Set up a Claude Code agent on XO: create a project, link your Claude credentials via OAuth, and open the browser-based editor to start working.
+
+## Setup Walkthrough
+
+<VideoEmbed id="749ccdf580b543209237b5cdd12f42a3" title="Claude Code Setup on XO Builders" />
+
+## What You'll Need
+
+- An [XO account](https://beta.xo.builders)
+- **One of:** an Anthropic API key, **or** a Claude account (subscription) you'll authenticate via OAuth after the workspace provisions
+
+## Deploy Claude Code
+
+<Steps>
+  <Step>
+    ### Create a New Project
+    Go to [beta.xo.builders](https://beta.xo.builders/).
+
+    ![XO Builders dashboard](/images/claude-code-setup-01-dashboard.jpeg)
+
+    Click **New Project** in the left sidebar.
+
+    ![Click New Project](/images/claude-code-setup-02-new-project.jpeg)
+
+    On the **Claude Code** template card, click **Create Agent**.
+
+    ![Click Create Agent on the Claude Code card](/images/claude-code-setup-03-create-agent.jpeg)
+  </Step>
+  <Step>
+    ### Configure Project Details
+    Enter a unique **Project Name** — e.g. `xo-claude`.
+
+    Optionally, paste an **Anthropic API Key**. You can skip this and connect your Claude subscription later via OAuth (see [Connect Claude](#connect-claude) below).
+
+    Click **Create Project**.
+
+    ![Click Create Project](/images/claude-code-setup-04-create-project.jpeg)
+  </Step>
+  <Step>
+    ### Wait for Startup
+    Wait until the **Cowork API** status shows **Up**.
+
+    ![Cowork API status Up](/images/claude-code-setup-05-cowork-api.jpeg)
+
+    <Callout type="info">
+      Don't proceed to the Claude authentication step until the workspace is fully running.
+    </Callout>
+  </Step>
+  <Step>
+    ### Verify Setup
+    Open the **Setup** tab in the top sub-navigation and review the setup checklist. The **Model connected** row is where you'll authenticate Claude in the next step.
+
+    ![Setup checklist with Model connected row](/images/claude-code-setup-06-setup-checklist.jpeg)
+  </Step>
+  <Step>
+    ### Connect Claude
+    Skip this step if you provided an Anthropic API key in Step 2 — your agent is already authenticated. Otherwise, select **Model connected** from the Setup checklist and click **Connect Claude** to link your Claude account via OAuth.
+
+    ![Click Connect Claude](/images/claude-code-setup-07-connect-claude.jpeg)
+
+    <Callout type="warn">
+      OAuth is only available **after provisioning is complete**. Wait for the workspace to finish starting up before clicking Connect Claude.
+    </Callout>
+
+    See [Connect Claude](/setup/models/oauth/claude) for the full OAuth walkthrough.
+  </Step>
+  <Step>
+    ### Open Your Editor
+    Open the **Launch** tab.
+
+    ![Open the Launch tab](/images/claude-code-setup-08-launch.jpeg)
+
+    Under **Agent Connections**, click **code-server** to open the browser-based VS Code in a new tab.
+
+    ![Click code-server under Agent Connections](/images/claude-code-setup-09-codeserver.jpeg)
+
+    Click **Yes, I trust the authors** to open the workspace.
+
+    ![Trust the workspace authors](/images/claude-code-setup-10-trust-authors.jpeg)
+
+    Open a terminal with **Ctrl + `** and run `claude` to start a session.
+
+    Full walkthrough: [Access Your Machine via VS Code Server](/getting-started/vs-code-server).
+  </Step>
+</Steps>
+
+Your Claude Code agent is now authenticated and ready.

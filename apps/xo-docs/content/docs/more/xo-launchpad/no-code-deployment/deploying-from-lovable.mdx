@@ -1,0 +1,44 @@
+---
+title: Deploying from Lovable
+icon: Lovable
+description: Take your Lovable prototype to production via XO Launchpad in three steps.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+XO Launchpad integrates with [Lovable.dev](https://lovable.dev) to make it seamless to take your prototypes and ship them into production. Sync your Lovable projects directly to GitHub and deploy with XO Launchpad.
+
+<Steps>
+  <Step>
+    ### Build on Lovable
+
+    Go to [Lovable.dev](https://lovable.dev) and create your project. Once generated, Lovable sets up a GitHub repository for your code automatically.
+
+    Verify the repo contains all necessary files, including a `Dockerfile`.
+  </Step>
+
+  <Step>
+    ### Sync with GitHub
+
+    In Lovable, connect your GitHub account and select the project to sync. Lovable pushes your code to a GitHub repository under your account.
+
+    Copy the **repository URL** (e.g. `https://github.com/username/project-name`).
+  </Step>
+
+  <Step>
+    ### Deploy on XO Launchpad
+
+    Go to [launchpad.xo.builders](https://launchpad.xo.builders), choose **Create Deployment → GitHub Repository**, and follow the [GitHub deployment guide](/more/xo-launchpad/no-code-deployment/deploying-from-github-repository).
+  </Step>
+</Steps>
+
+## Notes & Best Practices
+
+- **Dockerfile required** — Ensure your Lovable repo contains a valid `Dockerfile`
+- **Environment Variables** — Add required variables as GitHub repository secrets before deploying
+- **Port Binding** — Make sure your app listens on `process.env.PORT` or equivalent
+
+<Callout type="info">
+  Prototype on Lovable. Scale with XO Launchpad.
+</Callout>

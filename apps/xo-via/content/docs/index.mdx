@@ -1,0 +1,38 @@
+---
+title: XO Docs
+description: Workspaces for AI agents, rendered inside the phone OS.
+---
+
+# XO Docs
+
+This page is rendered from `content/docs/index.mdx` via the **mdx** XO App kind. The source is a Markdown file with frontmatter; the renderer is a Server Component using `next-mdx-remote/rsc`.
+
+## How it works
+
+1. `app/docs/app.ts` declares `kind: "mdx"`, `collection: "docs"`, `slug: "index"`.
+2. `app/docs/page.tsx` reads `content/docs/index.mdx` at request time.
+3. The MDX source is compiled on the server and rendered with a component map that matches the phone OS dark theme.
+4. The result lands inside `<XOAppShell>` like any other XO App.
+
+## What you can write
+
+Standard Markdown works: **bold**, *italic*, `inline code`, [links](https://xo.builders), and lists:
+
+- Headings (h1 to h3 are themed)
+- Paragraphs with the right color and leading
+- Lists, ordered and unordered
+- Blockquotes
+- Code blocks
+
+```ts
+// Code blocks render in the same monospace family as the rest of the phone OS
+const greeting: string = "Hello from MDX"
+```
+
+## What you cannot write yet
+
+> Custom MDX components (e.g. `<Callout>`, `<Tabs>`) are not registered in the component map yet. Add them in `components/mdx-components.tsx` and they become available everywhere.
+
+## Pull to refresh
+
+This app keeps the `pullToRefresh` gesture from the original native `Docs`. Default intent for `kind: "mdx"` is `refresh-route`, which calls `router.refresh()`. Drag down from the top of the page to test.

@@ -1,0 +1,5 @@
+{
+  "title": "More",
+  "icon": "more",
+  "pages": ["xo-launchpad", "xo-mcp-server", "xo-cowork-api"]
+}

@@ -1,0 +1,31 @@
+---
+title: Handbook
+description: The XO operating handbook, pocket edition.
+---
+
+# Handbook
+
+A second MDX-backed XO App, sharing the same renderer as `Docs`. Different `collection` and `slug`, same plumbing.
+
+## XO at a glance
+
+XO is **workspaces for AI agents**, in two stacked layers:
+
+- **Coworker** is the unit. A portable, containerized agent workspace that runs the same on a laptop, in Coder, in Docker, or in Vercel Sandbox.
+- **Swarm** is the platform that launches and orchestrates many Coworker workspaces across whatever container host you point it at.
+
+## The four product repos
+
+| Layer | Frontend | Backend |
+|---|---|---|
+| Workspace | `xo-coworker` (Tauri) | `xo-cowork-api` (FastAPI) |
+| Platform | `xo-swarm` (Next.js) | `xo-swarm-api` (FastAPI) |
+
+## Conventions
+
+- Auth is **Clerk** everywhere.
+- **MCP** is how XO integrates external tools (Linear, GitHub, Slack, custom).
+- **OpenClaw** is the open-source agent runtime.
+- Cloud hosts are **pluggable**: Coder today, Docker and Vercel Sandbox next.
+
+> The full canonical map lives in the workspace `CLAUDE.md`. This page is a phone-friendly summary.

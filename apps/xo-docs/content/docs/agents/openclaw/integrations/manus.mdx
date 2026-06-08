@@ -1,0 +1,103 @@
+---
+title: Manus
+description: Control the Manus AI agent platform from OpenClaw — cloud tasks, local commands, desktop control, and hybrid mode.
+icon: Manus
+---
+
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Callout } from "fumadocs-ui/components/callout";
+import { Accordions, Accordion } from "fumadocs-ui/components/accordion";
+
+Full control of the Manus AI agent platform from OpenClaw. Send cloud tasks, run local commands, control the desktop, manage files and projects, set up webhooks, and run in hybrid mode — all from a single skill.
+
+## What This Skill Can Do
+
+<Accordions>
+	<Accordion title="Cloud Tasks">
+		- Send any prompt to Manus AI and stream the response in real-time - Choose
+		execution mode: `agent` (full reasoning), `chat` (fast), `adaptive`
+		(auto-select) - Attach files or URLs as context for a task - Continue a
+		previous task by threading on an existing task ID - Fire-and-forget with
+		`--no-wait` — task runs in the background
+	</Accordion>
+	<Accordion title="Task Management">
+		- List all tasks with optional limit - View full task output and metadata -
+		Rename a task title - Delete a task
+	</Accordion>
+	<Accordion title="File Management">
+		- Upload local files to use as task input (2-step: register + S3 upload) -
+		List, inspect, and delete uploaded files
+	</Accordion>
+	<Accordion title="Projects">
+		- Create and list projects to organize tasks - Set default instructions per
+		project
+	</Accordion>
+	<Accordion title="Webhooks">
+		- Register endpoints to receive task event notifications - Filter events:
+		`task.completed`, `task.failed`, `task.cancelled` - Delete webhook
+		subscriptions
+	</Accordion>
+	<Accordion title="Local Execution">
+		- Run shell commands on your local machine with safety approval - Read and
+		write local files - Execute Python code locally
+	</Accordion>
+	<Accordion title="Desktop Control">
+		- List running applications and launch or kill processes - Take screenshots
+		- Get GPU and system information
+	</Accordion>
+	<Accordion title="Hybrid Mode">
+		- Cloud AI plans the task; your local machine executes it
+	</Accordion>
+</Accordions>
+
+## Set Up the Skill
+
+<Steps>
+  <Step>
+    ### Clone the Skill
+
+    Navigate to your OpenClaw skills directory and clone the repository:
+
+    ```bash
+    cd ~/.openclaw/workspace/skills/
+    git clone https://github.com/SAGARRAMBADE21/manus-skill.git manus
+    ```
+
+    <Callout type="info">
+      Folder name must be `manus`.
+    </Callout>
+
+  </Step>
+  <Step>
+    ### Get Your API Key
+
+    Go to [manus.im/settings/api](https://manus.im/settings/api) and generate an API key.
+
+  </Step>
+  <Step>
+    ### Configure Credentials
+
+    Add your API key and safety level to the workspace environment:
+
+    ```bash
+    echo 'MANUS_API_KEY=your-key-here' >> ~/.openclaw/workspace/.env
+    echo 'MANUS_SAFETY_LEVEL=allowlist' >> ~/.openclaw/workspace/.env
+    ```
+
+    | Field | Required | Description |
+    |-------|----------|-------------|
+    | `MANUS_API_KEY` | Yes | API key from [manus.im/settings/api](https://manus.im/settings/api) |
+    | `MANUS_SAFETY_LEVEL` | Yes | Safety level for local execution (`allowlist` recommended) |
+
+  </Step>
+  <Step>
+    ### Refresh Skills
+
+    Refresh skills in OpenClaw so the Manus skill loads:
+
+    ```
+    /refresh skills
+    ```
+
+  </Step>
+</Steps>

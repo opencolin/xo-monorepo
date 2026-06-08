@@ -1,0 +1,142 @@
+---
+title: Overview
+icon: Info
+description: Base URL, auth model, transport conventions, and error envelope.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+`xo-cowork-api` is a Python 3.12 FastAPI app that runs inside every Coworker workspace on port `5002`. The frontend (Tauri desktop, browser, mobile, or any AI client) talks to it over plain HTTP plus Server-Sent Events.
+
+## Base URL
+
+```
+http://${HOST:-localhost}:${PORT:-5002}
+```
+
+How you discover it depends on where you run:
+
+| Build mode | How the frontend gets the URL |
+|---|---|
+| Tauri desktop | `desktopAPI.getBackendUrl()` over Tauri IPC. The Rust shell picks a free port and tells the UI. |
+| Web (hosted) | `NEXT_PUBLIC_API_URL` env var, or relative paths through a Next.js dev proxy. |
+| Remote tunnel (Coder, Vercel Sandbox, etc.) | Tunnel URL injected by `getRemoteConfig()`. |
+
+In Tauri, the Rust shell also boots, watches, and restarts the API. Listen for the `backend-restart` event and re-establish your SSE streams when it fires.
+
+## Auth model
+
+Local desktop runs on loopback, so there is no auth header on chat or file endpoints. Remote workspaces proxy through a tunnel and add one of:
+
+- `Authorization: Bearer {token}` (most hosts)
+- `Coder-Session-Token: {token}` (Coder workspaces)
+
+These headers are between your frontend and the cowork-api instance running in that remote workspace. They are **not** the same as the `xo-swarm-api` Bearer token that cowork-api itself holds for its upstream calls. That token is minted by the Clerk poll-token flow in `/xo-auth/*` and is invisible to the frontend.
+
+<Callout type="warn">
+The home-clamp on file endpoints is the **only** safety layer for filesystem access. Treat the workspace itself as the trust boundary. Anything that breaches `$HOME` returns `403`, but symlinks under `$HOME` pointing outward are not blocked.
+</Callout>
+
+## Content types
+
+| Use case | Header |
+|---|---|
+| Most POST bodies | `Content-Type: application/json` |
+| File upload | `Content-Type: multipart/form-data` (only on `/api/files/upload`) |
+| Streaming responses | `text/event-stream` (only on `/api/chat/stream/{id}` and `/ask_question_streaming`) |
+
+JSON request bodies must always be valid JSON. Numbers, objects, or `null` are rejected on string-typed fields with a `400`.
+
+## The two-call turn flow
+
+A single chat turn is **always** two HTTP calls:
+
+```
+client                         /api/chat/prompt                  /api/chat/stream/{id}
+  │                                  │                                  │
+  │  POST text + (session_id?)       │                                  │
+  ├─────────────────────────────────►│                                  │
+  │ {stream_id, session_id}          │                                  │
+  │◄─────────────────────────────────│                                  │
+  │                                  │                                  │
+  │  GET (EventSource)                                                  │
+  ├─────────────────────────────────────────────────────────────────────►│
+  │  ◄══ event: session-created (only on a brand-new turn)              │
+  │  ◄══ event: text-delta (many)                                       │
+  │  ◄══ event: heartbeat (during long tool calls)                      │
+  │  ◄══ event: done                                                    │
+```
+
+`prompt` reserves a `stream_id` and (for new sessions) starts the bootstrap. `stream` does the actual long-poll. The frontend can navigate to `/c/{session_id}` immediately after `prompt` returns; the SSE replay continues in parallel.
+
+See the [Chat API](/more/xo-cowork-api/chat-api) page for the full event vocabulary, reconnect semantics, and React Strict Mode handling.
+
+## Universal home-clamp (filesystem endpoints)
+
+Every endpoint that takes a `path` field runs the same check:
+
+```python
+target = Path(raw_path).resolve()
+if not str(target).startswith(str(Path.home())):
+    return 403, {"detail": "Access denied"}
+```
+
+This means:
+
+1. All paths must resolve under the OS user's home directory (`$HOME`).
+2. Symlinks are followed by `Path.resolve()`. A symlink under `$HOME` pointing outside is a known leak.
+3. Relative paths are resolved against the cowork-api process's CWD before the home check, so always send absolute paths.
+
+The single exception is the `workspace` form field on `/api/files/upload`, which is **not** clamped to `$HOME`. Every other endpoint with a `path` parameter is clamped.
+
+## Common error envelope
+
+Every JSON error follows this shape:
+
+```jsonc
+{ "detail": "<human-readable string OR object>" }
+```
+
+Status codes used across the surface:
+
+| Code | When |
+|---|---|
+| 400 | Missing or malformed request body field |
+| 403 | Path resolves outside `$HOME` (filesystem endpoints) |
+| 404 | Target doesn't exist or has wrong type |
+| 409 | Target already exists (mkdir only) |
+| 413 | Upload exceeds 100 MB |
+| 500 | Unhandled I/O error; `detail` carries the exception message |
+
+Always JSON, always `detail`-keyed, always parseable.
+
+## Stage-aware behavior
+
+`STAGE` env (default `beta`) flips a few defaults inside the API:
+
+| Setting | `local` | `beta` |
+|---|---|---|
+| Claude binary | `shutil.which("claude")` | `/home/coder/.local/bin/claude` |
+| Codex binary | `shutil.which("codex")` | `/home/coder/.local/bin/codex` |
+| `AI_WORKSPACE_ROOT` | Project directory | `/home/coder` |
+
+`local` is for cowork-api on a developer laptop with whatever `claude` / `codex` are in PATH. `beta` assumes the Coder image with binaries at fixed paths. Frontends do not need to know the stage; everything routes through `/api/*` regardless.
+
+## Discoverable workspace config
+
+Before creating projects or referencing the projects root, fetch the canonical paths:
+
+```typescript
+const cfg = await fetch(`${BASE}/api/config/workspace`).then(r => r.json());
+// → { roots: { openclaw: "/Users/me/xo-projects" }, default: "openclaw" }
+const projectsRoot = cfg.roots[cfg.default];
+```
+
+Do **not** hardcode `~/xo-projects/`. The `XO_PROJECTS_ROOT` env var on the server side overrides it.
+
+## What's next
+
+- [Chat API](/more/xo-cowork-api/chat-api): prompt, stream, abort, and SSE event vocabulary.
+- [Files API](/more/xo-cowork-api/files-api): file CRUD plus project scaffolding.
+- [Sessions API](/more/xo-cowork-api/sessions-api): list and search sessions, hydrate messages.
+- [Frontend Integration](/more/xo-cowork-api/frontend-integration): putting it all together with TypeScript.

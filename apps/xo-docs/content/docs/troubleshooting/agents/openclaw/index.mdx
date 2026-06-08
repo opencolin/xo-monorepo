@@ -1,0 +1,172 @@
+---
+title: OpenClaw
+description: Fix common OpenClaw issues — from gateway errors to unresponsive agents.
+icon: OpenClaw
+---
+
+import { VideoEmbed } from "@/components/video-embed";
+import { Accordions, Accordion } from "fumadocs-ui/components/accordion";
+import { Callout } from "fumadocs-ui/components/callout";
+
+## Video Walkthrough
+
+<VideoEmbed
+	id="aaf97b32aa3c40679deaf7cf5e4ebee5"
+	title="OpenClaw Troubleshooting"
+/>
+
+## Common Issues & Fixes
+
+<Accordions>
+  <Accordion title='"Failed to Create Project" Error'>
+    If you see this error when creating a project:
+
+    - Project name might have spaces or special characters
+    - Use hyphens or underscores instead
+    - Keep it simple: letters, numbers, hyphens, underscores only
+    - Example: Use `my-cool-project` instead of `My Cool Project!`
+
+  </Accordion>
+
+  <Accordion title="Gateway Token Error">
+    If you see this error when connecting to the gateway:
+
+    ![Gateway token error](/images/ts-gateway-error.jpeg)
+
+    Your gateway token must exactly match your project name (case-sensitive). Enter it in the **Gateway Token** field and click **Connect**.
+
+    ![Enter gateway token](/images/ts-gateway-token-field.jpeg)
+
+    ![Click Connect](/images/ts-gateway-connect.jpeg)
+
+    ### Finding Your Gateway Token
+
+    If you don't remember your project name, open the workspace to check it:
+
+    1. Open the **Launch** tab and click **code-server** under [Agent Connections](/getting-started/manage-workspace#opening-your-ide)
+
+    2. Open the `.openclaw` folder
+
+    ![Open .openclaw folder](/images/ts-openclaw-folder.jpeg)
+
+    3. Open the `.env` file
+
+    ![Open .env file](/images/ts-env-file.jpeg)
+
+    Your token is the `OPENCLAW_GATEWAY_TOKEN` value. You can also verify it in `openclaw.json` under `gateway.auth.token`
+
+  </Accordion>
+
+  <Accordion title="Telegram/Agent Not Responding">
+    Check in this order:
+
+    1. Verify your Telegram bot token is correct
+    2. Verify your Anthropic API key is valid
+    3. Check if the gateway stopped
+
+    ### Verify Your Tokens
+
+    Open the workspace to check your tokens are correct:
+
+    1. Open the **Launch** tab and click **code-server** under [Agent Connections](/getting-started/manage-workspace#opening-your-ide)
+
+    2. Open the `.openclaw` folder → `.env` file
+
+    ![Open .openclaw folder](/images/ts-openclaw-folder.jpeg)
+
+    ![Open .env file](/images/ts-env-file.jpeg)
+
+    3. Verify `TELEGRAM_BOT_TOKEN` and `ANTHROPIC_API_KEY` are set and correct
+
+    ![Environment variables in .env file](/images/ts-env-variables.jpeg)
+
+    ### Restart the Gateway
+
+    If tokens are correct but the agent still isn't responding, [restart the gateway](/agents/openclaw/restart-gateway). If the gateway still won't start, see the **Gateway Won't Start After Troubleshooting** section.
+
+  </Accordion>
+
+  <Accordion title='"AI service is temporarily overloaded" Error'>
+    This means the model provider is having issues. Switch to a different model by running `openclaw config` in your workspace terminal.
+
+    For detailed instructions, see the [Change Model guide](/agents/openclaw/models/switch-to-codex) or the [OpenClaw model providers documentation](https://github.com/openclaw/openclaw/blob/main/docs/concepts/model-providers.md).
+
+    ### Quick Steps
+
+    1. [Open your workspace IDE](/getting-started/manage-workspace#opening-your-ide), [open a terminal](/getting-started/vs-code-server#open-a-terminal)
+
+    2. Run `openclaw config`
+
+    ![Run openclaw config](/images/model-openclaw-config.jpeg)
+
+    3. Select **Local** for gateway location
+
+    ![Select Local](/images/model-select-local.jpeg)
+
+    4. Select **Model**
+
+    ![Select Model section](/images/model-select-section.jpeg)
+
+    5. Choose your provider
+
+    ![Select provider](/images/model-select-provider.jpeg)
+
+    6. Select the model you want to switch to
+
+    ![Select model](/images/model-select-model.jpeg)
+
+    7. Confirm the remaining options and save
+
+    ![Config complete](/images/model-config-done.jpeg)
+
+    8. [Restart the gateway](/agents/openclaw/restart-gateway) to apply changes
+
+  </Accordion>
+
+  <Accordion title="502 Bad Gateway on OpenClaw Dashboard">
+    If you see this error:
+
+    ![502 Application Unavailable](/images/502-gateway.png)
+
+    If you just created a new project, the gateway isn't ready yet. Wait **10–15 minutes** for the workspace to fully provision before opening the OpenClaw Gateway.
+
+    If the error persists after the startup period, check the **Gateway Won't Start After Troubleshooting** section.
+
+  </Accordion>
+
+  <Accordion title="Gateway Won't Start After Troubleshooting">
+    If the OpenClaw Gateway keeps showing errors and common fixes haven't resolved it:
+
+    1. [Open your workspace IDE](/getting-started/manage-workspace#opening-your-ide), [open a terminal](/getting-started/vs-code-server#open-a-terminal), and check the gateway status:
+
+    ```bash
+    ~/xo-cowork-api/openclaw.sh status
+    ```
+
+    ![OpenClaw status output](/images/ts-openclaw-status.jpeg)
+
+    2. Review the errors shown in the terminal output
+    3. If the error points to `openclaw.json`, open the file and fix the issue (malformed JSON, missing fields, invalid values)
+    4. Open the **Launch** tab and click **[OpenClaw Restart](/getting-started/manage-workspace#restarting-the-openclaw-gateway)**
+    5. Wait a few minutes, then open the gateway again
+
+    This can be an iterative process — check the logs, fix the error, restart, and repeat until the gateway comes up clean.
+
+  </Accordion>
+
+  <Accordion title="Startup Is Taking Longer Than 10 Minutes">
+    Refresh the dashboard. If the project is still initialising after 15 minutes, delete and recreate the project — provisioning occasionally times out on first attempt.
+  </Accordion>
+</Accordions>
+
+## Tips
+
+<Callout type="info">
+	Most issues come down to wrong API keys or tokens — check these first. Always
+	verify billing/usage isn't maxed out and check logs for specific error
+	messages.
+</Callout>
+
+## Need Visual Help?
+
+Check out our [OpenClaw video tutorials](https://youtube.com/playlist?list=PLO0-1AdgW2ZsTv1qikBuyTlS69iptJocv&si=vm2q4TE6xDZLVskv) — covers setup, common problems, and troubleshooting.

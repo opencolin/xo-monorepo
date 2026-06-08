@@ -1,0 +1,106 @@
+---
+title: Access Your Machine via VS Code Server
+description: Open a browser-based VS Code IDE and start running commands in your workspace.
+icon: Monitor
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Code-Server gives you a full VS Code experience in your browser — no local installation required. This guide walks you through first-time setup, including trusting the workspace and opening a terminal.
+
+## What You'll Need
+
+- An [XO account](/getting-started/create-account) with an active workspace
+- A workspace machine in the **running** state (see [Manage Your Machine](/getting-started/manage-workspace))
+
+## Launch Code-Server
+
+<Steps>
+  <Step>
+    ### Open the Launch Tab
+
+    From your project page, open the **Launch** tab in the top sub-navigation.
+
+    ![Open the Launch tab](/images/cfg-launch-tab.jpeg)
+  </Step>
+  <Step>
+    ### Click code-server
+
+    Under **Agent Connections**, click **code-server**. A new browser tab opens with the editor.
+
+    ![Click code-server](/images/cfg-07-codeserver.jpeg)
+  </Step>
+  <Step>
+    ### First-Time Setup
+
+    On first launch, VS Code shows a welcome screen. This is normal.
+
+    ![VS Code welcome screen](/images/core-platform-setup/vs-code-server-3.jpeg)
+  </Step>
+  <Step>
+    ### Trust the Workspace
+
+    A dialog asks if you trust the files in this folder. Check **Trust the authors of all files in the parent folder 'home'**.
+
+    ![Check trust checkbox](/images/core-platform-setup/vs-code-server-4.jpeg)
+  </Step>
+  <Step>
+    ### Confirm Trust
+
+    Click **Yes, I trust the authors** to proceed.
+
+    ![Click Yes, I trust the authors](/images/core-platform-setup/vs-code-server-5.jpeg)
+  </Step>
+  <Step>
+    ### Dismiss the Welcome Tab
+
+    Click **Mark Done** to close the welcome walkthrough. You're now in the editor.
+
+    ![Click Mark Done](/images/core-platform-setup/vs-code-server-6.jpeg)
+  </Step>
+</Steps>
+
+## Open a Terminal
+
+You need a terminal to run workspace commands like `openclaw config`, `openclaw start`, and others.
+
+<Steps>
+  <Step>
+    ### Keyboard Shortcut (Fastest)
+
+    Press **Ctrl + `** (backtick) to toggle the integrated terminal panel.
+
+    ![Terminal opened via keyboard shortcut](/images/core-platform-setup/vs-code-server-7.jpeg)
+  </Step>
+</Steps>
+
+**Alternatively**, use the menu:
+
+<Steps>
+  <Step>
+    ### Open the Application Menu
+
+    Click the hamburger menu icon (three horizontal lines) in the top-left corner.
+
+    ![Click Application Menu](/images/core-platform-setup/vs-code-server-8.jpeg)
+  </Step>
+  <Step>
+    ### Select New Terminal
+
+    Navigate to **Terminal** and click **New Terminal**.
+
+    ![Click New Terminal](/images/core-platform-setup/vs-code-server-9.jpeg)
+  </Step>
+  <Step>
+    ### Start Typing Commands
+
+    The terminal panel appears at the bottom. Click inside it and start running commands.
+
+    ![Terminal ready for input](/images/core-platform-setup/vs-code-server-10.jpeg)
+  </Step>
+</Steps>
+
+<Callout type="info">
+  The terminal opens in your workspace's home directory by default. All your project files and configs live here.
+</Callout>

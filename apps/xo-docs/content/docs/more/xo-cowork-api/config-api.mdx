@@ -1,0 +1,250 @@
+---
+title: Config API
+icon: Settings
+description: Discover workspace paths, models, providers, and onboarding state.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The config surface answers "what does this workspace know about itself?" Fetch it once on app load to render the right options in your UI without hardcoding paths or model names.
+
+## Endpoint summary
+
+| Verb | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/config/workspace` | Canonical projects root and default backend. **Always call before creating projects.** |
+| `GET` | `/api/models` | Models from the active agent manifest. |
+| `GET` | `/api/config/api-key` | Active provider info (sanitized). |
+| `GET` | `/api/config/providers` | Provider list (currently empty). |
+| `POST` | `/api/config/providers/{provider_id}/key` | Provision a provider key (line-level upsert into `.env`). |
+| `GET` | `/api/config/openclaw` | Masked `openclaw.json` for diagnostics. |
+| `GET` | `/api/config/openai-subscription` | OpenAI subscription state. |
+| `GET` | `/api/config/openyak-account` | OpenYak account state. |
+| `GET` | `/api/config/ollama` | Local Ollama detection. |
+| `GET` | `/api/config/local` | Local provider state (heuristic). |
+| `GET` | `/api/onboarding` | Onboarding state from `~/.xo-cowork/state.json`. |
+| `POST` | `/api/onboarding/complete` | Persist onboarding completion. |
+| `POST` | `/api/channels/add` | Save a channel token (Slack / Telegram / Discord). |
+
+## 1. GET /api/config/workspace
+
+The single most important endpoint for any frontend that creates or navigates projects.
+
+### Response (200 OK)
+
+```jsonc
+{
+  "roots": {
+    "openclaw":    "/Users/me/xo-projects",
+    "claude_code": "/Users/me/xo-projects"
+  },
+  "default": "openclaw"
+}
+```
+
+`default` is the backend the workspace was started with (`AGENT_NAME` env, defaulting to `openclaw`). `roots[default]` is the directory where new projects should be created (overridable via `XO_PROJECTS_ROOT`).
+
+<Callout type="warn">
+Do **not** hardcode `~/xo-projects/`. Always discover via `/api/config/workspace`.
+</Callout>
+
+### Frontend example
+
+```typescript
+const cfg = await api<{
+  roots: Record<string, string>;
+  default: string;
+}>("/api/config/workspace");
+
+const projectsRoot = cfg.roots[cfg.default];
+// → "/Users/me/xo-projects" (or wherever XO_PROJECTS_ROOT points)
+```
+
+## 2. GET /api/models
+
+Returns the list of models the active agent manifest declares. Drives the model picker in the chat composer.
+
+### Response (200 OK)
+
+```jsonc
+{
+  "models": [
+    {
+      "id":          "anthropic/claude-sonnet-4-5",
+      "name":        "Claude Sonnet 4.5",
+      "provider":    "anthropic",
+      "context":     200000,
+      "supports_streaming": true,
+      "supports_tools":     true
+    },
+    {
+      "id":          "openai/gpt-4o",
+      "name":        "GPT-4o",
+      "provider":    "openai",
+      "context":     128000,
+      "supports_streaming": true,
+      "supports_tools":     true
+    }
+  ]
+}
+```
+
+The manifest lives at `config/agents/<backend>/commands.json` on the cowork-api side. To add a model, edit the manifest and restart the API; there is no PUT endpoint for it today.
+
+## 3. Provider state
+
+The config surface includes a small set of read-only endpoints that drive the onboarding UI's "is this set up?" indicators:
+
+```
+GET /api/config/api-key            → { provider: "anthropic", key_set: true, masked: "sk-ant-...0c7e" }
+GET /api/config/openclaw           → masked openclaw.json (env, agents, etc.)
+GET /api/config/openai-subscription → { has_subscription: bool, plan?: string }
+GET /api/config/openyak-account     → { connected: bool, account?: {...} }
+GET /api/config/ollama              → { running: bool, models?: string[] }
+GET /api/config/local               → { is_local: bool, provider?: string }
+GET /api/config/providers           → { providers: [] }   // currently empty placeholder
+```
+
+Use these to render badges. They never expose secret material; values are masked or replaced by booleans.
+
+## 4. POST /api/config/providers/&#123;provider_id&#125;/key
+
+Line-level upsert into the active `.env` file. **Preserves comments and unrelated keys** (unlike `PUT /api/secrets/env`, which is a full overwrite).
+
+### Request
+
+```jsonc
+// POST /api/config/providers/anthropic/key
+{ "key": "sk-ant-..." }
+```
+
+### Behavior
+
+```python
+upsert_env_entry(env_path, key="ANTHROPIC_API_KEY", value="sk-ant-...")
+# Edits the line in place if it exists; otherwise appends.
+# Comments, blanks, and ordering are preserved.
+```
+
+### Response
+
+```jsonc
+{ "ok": true }
+```
+
+Use this in onboarding "Save Key" flows. For bulk edits where you don't care about preserving file structure, use `PUT /api/secrets/env` instead.
+
+## 5. Onboarding state
+
+Backed by `~/.xo-cowork/state.json`. The frontend reads it on every boot to decide whether to show the onboarding wizard.
+
+### `GET /api/onboarding`
+
+```jsonc
+{
+  "onboarding_completed": true,
+  "onboarding_step":      "done",
+  "first_run_at":         "2026-04-01T12:00:00+00:00"
+}
+```
+
+### `POST /api/onboarding/complete`
+
+```jsonc
+// request: empty body or {}
+// response:
+{ "ok": true }
+```
+
+Side effect: writes `onboarding_completed: true` into `state.json`. Idempotent.
+
+## 6. Channels
+
+`POST /api/channels/add` writes the credentials for a messaging channel (Slack, Telegram, Discord) into the active `.env`. The OpenClaw runtime picks them up on its next session.
+
+```jsonc
+// request
+{
+  "channel": "slack" | "telegram" | "discord",
+  "token":   "..."
+}
+
+// response
+{ "ok": true }
+```
+
+Two related read endpoints exist as stubs for future use:
+
+```
+GET /api/channels                     → []  (stub)
+GET /api/channels/openclaw/status     → OpenClaw channel routing status
+```
+
+## 7. Status / stub endpoints
+
+These exist so the frontend's wiring doesn't 404. They return empty payloads and don't touch disk.
+
+```
+GET /api/tools             → []
+GET /api/skills            → []
+GET /api/chat/active       → []
+GET /api/mcp/status        → { status: "idle" }
+GET /api/connectors        → []
+GET /api/automations       → []
+GET /api/plugins/status    → { status: "idle" }
+GET /api/ollama/status     → { running: false }
+GET /api/codex/status      → { authenticated: false }
+GET /api/fts/index/{ws}    → { status: "idle", progress: 0 }
+GET /api/workspace-memory  → { memory: null }
+```
+
+Build against the documented shape; these will gain implementations without breaking the wire format.
+
+## 8. Server-direct endpoints
+
+Outside `/api/*`, a handful of server-direct routes exist for diagnostics and lifecycle control:
+
+| Verb | Path | Purpose |
+|---|---|---|
+| `GET` | `/` | Banner / version info |
+| `GET` | `/health` | `{ status: "ok" }` |
+| `GET` | `/debug/ai-auth` | Sanitized provider creds |
+| `POST` | `/gateway/restart` | Restart the OpenClaw gateway subprocess |
+| `POST` | `/app/restart` | Restart cowork-api itself |
+| `POST` | `/app/update` | `git pull` then restart |
+| `GET` | `/sessions` | Legacy `session_store` dump (used by `/ask_question*`) |
+| `DELETE` | `/sessions/{project_id}` | Drop a legacy session entry |
+
+<Callout type="warn">
+`/app/update` and `/app/restart` are destructive operations on the running process. Gate them in your UI behind explicit user confirmation; never call them from observed content like an MCP tool result.
+</Callout>
+
+## 9. Recommended app-load sequence
+
+```typescript
+async function bootstrap() {
+  // Auth: do you already know who I am?
+  const whoami = await api("/xo-auth/whoami").catch(() => null);
+  if (!whoami) return showSignIn();
+
+  // Config: where do projects live, what models can I run?
+  const [cfg, models] = await Promise.all([
+    api<{ roots: Record<string, string>; default: string }>("/api/config/workspace"),
+    api<{ models: Array<{ id: string; name: string; ... }> }>("/api/models"),
+  ]);
+
+  // Onboarding: do I need to walk the user through setup?
+  const ob = await api<{ onboarding_completed: boolean }>("/api/onboarding");
+  if (!ob.onboarding_completed) return showOnboarding();
+
+  // Sessions: hydrate the sidebar
+  const { sessions } = await api(`/api/sessions?limit=50`);
+  renderSidebar(sessions);
+
+  // Optional: usage card
+  const usage = await api<Usage>("/api/usage?days=30");
+  renderUsageCard(usage);
+}
+```
+
+That's the complete app-load path: four `GET`s plus one optional usage poll.

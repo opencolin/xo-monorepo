@@ -1,0 +1,63 @@
+---
+title: Connect Claude
+description: Authenticate XO agents with a Claude account via OAuth.
+icon: ClaudeCode
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Connect your Claude account to an XO agent via OAuth — no API key required. This flow is shared across any agent that exposes a **Connect Claude** button (Claude Code, future agents).
+
+## What You'll Need
+
+- An XO project that has finished provisioning
+- A Claude account (Pro, Team, or Enterprise — any plan that grants Claude API access)
+
+## Connect Your Claude Account
+
+<Steps>
+  <Step>
+    ### Open Setup → Models
+    From your project page, open the **Setup** tab in the top sub-navigation, then select **Models**. Find the **Claude Code** row.
+
+    ![Setup → Models with Claude Code row](/images/claude-oauth-01-models.jpeg)
+  </Step>
+  <Step>
+    ### Click Connect Claude
+    Click **Connect Claude** on the Claude Code row.
+
+    ![Click Connect Claude](/images/claude-oauth-02-connect-claude.jpeg)
+  </Step>
+  <Step>
+    ### Open the Sign-in Page
+    In the Connect Claude modal, click **Open sign-in page**. A new browser tab opens with the Claude sign-in.
+
+    ![Click Open sign-in page](/images/claude-oauth-03-open-signin.jpeg)
+  </Step>
+  <Step>
+    ### Authorize
+    Sign in to your Claude account if prompted, then click **Authorize** to grant access.
+
+    ![Click Authorize](/images/claude-oauth-04-authorize.jpeg)
+  </Step>
+  <Step>
+    ### Copy the Code
+    Click **Copy Code** to copy the authentication code Claude returns.
+
+    ![Click Copy Code](/images/claude-oauth-05-copy-code.jpeg)
+  </Step>
+  <Step>
+    ### Paste and Submit
+    Switch back to the XO tab. Paste the code into the **Enter sign-in code** field and click **Submit**.
+
+    ![Paste the code and click Submit](/images/claude-oauth-06-paste-submit.webp)
+  </Step>
+  <Step>
+    ### Close the Modal
+    Once the connection is confirmed, close the setup modal.
+
+    ![Close the modal](/images/claude-oauth-07-close.jpeg)
+  </Step>
+</Steps>
+
+Your Claude account is now connected. Your agent will use it for all model calls.

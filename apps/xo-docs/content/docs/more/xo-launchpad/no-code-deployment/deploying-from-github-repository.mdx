@@ -1,0 +1,93 @@
+---
+title: Deploying from GitHub Repository
+icon: Github
+description: Deploy directly from a GitHub repository branch to XO Launchpad.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { VideoEmbed } from '@/components/video-embed';
+
+This guide walks you through creating a deployment in XO Launchpad using a GitHub repository.
+
+<VideoEmbed id="a9d29aaa66cb47a4a147345de5e064d5" title="Deploying from GitHub — Video Walkthrough" />
+
+## Prerequisites
+
+**Environment Variables** — Set up required `ENV_VARS` as GitHub repository secrets before deploying.
+
+Go to your repository on GitHub: **Settings → Secrets and variables → Actions → New repository secret**
+
+Add each environment variable (e.g. `DATABASE_URL`, `API_KEY`, `JWT_SECRET`) inside the `ENV_VARS` secret.
+
+**Dockerfile** — Your repository must include a valid `Dockerfile` at the project root. Without it, your build will fail.
+
+<Steps>
+  <Step>
+    ### Open Deployment Setup
+
+    From the sidebar, go to **Create from blank**.
+  </Step>
+
+  <Step>
+    ### Choose Deployment Type
+
+    Under **Create New Deployment**, select **GitHub Repository**.
+  </Step>
+
+  <Step>
+    ### Configure GitHub Repository
+
+    Fill out the form:
+
+    - **Repository URL** — Format: `https://github.com/username/repo-name`
+    - **Branch Name** — The branch to deploy. Default: `main`
+    - **GitHub Access Token** — Generate a Personal Access Token (PAT) with `repo` and `workflow` scopes.
+
+    To generate a PAT: **GitHub Developer Settings → Tokens → New token**. Select `repo` and `workflow` scopes.
+
+    <Callout type="warn">
+      Without the correct PAT scopes, deployments will fail.
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Define Project Details
+
+    - **Project Name** — Unique name (lowercase letters, numbers, hyphens only). Example: `project-07`
+    - **Instance Size** — Choose based on resource needs.
+  </Step>
+
+  <Step>
+    ### Configure Ports
+
+    - **Application Port** — The port your app listens on (e.g. `3000`, `8080`)
+    - Leave **DO NOT Expose any External Ports** unchecked to get a public URL
+  </Step>
+
+  <Step>
+    ### Create Deployment
+
+    Review your settings and click **Create Deployment**. XO will pull the repository, build, and deploy your app.
+  </Step>
+</Steps>
+
+## Troubleshooting: 502 Gateway Error
+
+| Cause | Fix |
+|---|---|
+| Missing Dockerfile | Add a valid `Dockerfile` at the repository root |
+| Clicked too soon (build in progress) | Wait until logs show "container running" before visiting the URL |
+| Wrong port configured | Open Actions → Update Port and enter the correct port |
+| App crash on startup | Check deployment logs, fix errors, redeploy |
+| Missing environment variables | Verify all required vars are added as repository secrets |
+| Browser cache | Hard reload with `Ctrl + Shift + R` or open in incognito |
+
+### Quick Debugging Checklist
+
+1. Confirm Dockerfile exists and is valid
+2. Check logs for build or runtime errors
+3. Verify app listens on the configured port
+4. Ensure all required environment variables are set
+5. Wait for deployment to finish before accessing the app
+6. Clear cache if error persists

@@ -1,0 +1,65 @@
+---
+title: Connect Codex
+description: Authenticate XO agents with an OpenAI Codex subscription via OAuth.
+icon: Codex
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Connect your OpenAI Codex subscription to an XO agent via OAuth — no API key required. This flow is shared across any agent that exposes a **Connect ChatGPT** button (OpenClaw, future agents).
+
+## What You'll Need
+
+- An XO project that has finished provisioning
+- An OpenAI account with a Codex subscription
+
+## Connect Your Codex Account
+
+<Steps>
+  <Step>
+    ### Open Setup → Models
+    From your project page, open the **Setup** tab in the top sub-navigation, then select **Models**.
+
+    ![Setup → Models](/images/codex-oauth-01-models.jpeg)
+  </Step>
+  <Step>
+    ### Click Connect ChatGPT
+    On the Codex model row, click **Connect ChatGPT**.
+
+    ![Click Connect ChatGPT](/images/codex-oauth-02-connect-chatgpt.jpeg)
+  </Step>
+  <Step>
+    ### Open the Sign-in Page
+    In the Connect ChatGPT modal, click **Open ChatGPT sign-in**. A new browser tab opens with the OpenAI sign-in.
+
+    ![Click Open ChatGPT sign-in](/images/codex-oauth-03-open-signin.jpeg)
+  </Step>
+  <Step>
+    ### Sign In to OpenAI
+    Sign in with the account tied to your Codex subscription and complete any multi-factor authentication prompts.
+
+    ![Sign in to OpenAI](/images/codex-oauth-04-signin.webp)
+  </Step>
+  <Step>
+    ### Click Try Again
+    Switch back to the XO tab and click **Try again** to generate a device verification code.
+
+    ![Click Try again](/images/codex-oauth-05-try-again.jpeg)
+  </Step>
+  <Step>
+    ### Verify the Device
+    Click **Open ChatGPT sign-in** again — this time it produces a device verification code. Switch to the OpenAI tab, paste the code into the verification field, and click **Continue**.
+
+    ![Click Open ChatGPT sign-in to get a code](/images/codex-oauth-06-generate-code.jpeg)
+
+    ![Paste the verification code and click Continue](/images/codex-oauth-07-paste-code.webp)
+  </Step>
+  <Step>
+    ### Confirm Connection
+    Once the connection is confirmed, close the setup modal.
+
+    ![Codex connected](/images/codex-oauth-08-connected.jpeg)
+  </Step>
+</Steps>
+
+Your Codex subscription is now connected. Your agent will use it for all model calls.

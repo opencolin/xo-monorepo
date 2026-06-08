@@ -1,0 +1,21 @@
+# XO monorepo — JavaScript/TypeScript workspace.
+#
+# Only the web apps participate in the pnpm workspace. Python services
+# (services/*), agent kits (agents/*) and static content (content/*) manage
+# their own toolchains and are intentionally excluded.
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# pnpm v10+ blocks dependency install scripts unless allow-listed here.
+# All of these ship prebuilt platform binaries via optionalDependencies, so
+# their build scripts are not required — kept `false` for fast, deterministic
+# installs (mirrors the original per-app setting carried over from xo-docs).
+# Flip an entry to `true` if a future app genuinely needs it compiled locally.
+allowBuilds:
+  "@swc/core": false
+  core-js: false
+  esbuild: false
+  msw: false
+  sharp: false
+  unrs-resolver: false

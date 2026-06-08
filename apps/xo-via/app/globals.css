@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind 4 @theme: brand tokens become real CSS variables and
+ * Tailwind utilities (`bg-lime-400`, `text-ink-900`, `rounded-device`,
+ * `shadow-device`, `border-phone-divider`) are generated from these.
+ *
+ * No tailwind.config.ts needed; Tailwind 4 auto-detects class usage.
+ */
+@theme {
+  /* XO lime ramp */
+  --color-lime-50:  #f4faec;
+  --color-lime-100: #e5f4d2;
+  --color-lime-200: #cbe9a8;
+  --color-lime-300: #a9da76;
+  --color-lime-400: #83d63a;
+  --color-lime-500: #6cbd2c;
+  --color-lime-600: #549721;
+  --color-lime-700: #41761e;
+  --color-lime-800: #365e1d;
+  --color-lime-900: #2e4f1c;
+
+  /* Ink (page background) */
+  --color-ink:     #08090A;
+  --color-ink-900: #08090A;
+
+  /* Phone device tokens */
+  --color-phone-bezel:   #1c1c1e;
+  --color-phone-metal:   #2c2c2e;
+  --color-phone-screen:  #000000;
+  --color-phone-card:    #1c1c1e;
+  --color-phone-card2:   #2c2c2e;
+  --color-phone-divider: rgba(255, 255, 255, 0.08);
+
+  /* Type stack: Inter loaded via next/font, exposed as --font-inter */
+  --font-sans:    var(--font-inter), "SF Pro Text", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-display: "SF Pro Display", var(--font-inter), system-ui, sans-serif;
+  --font-mono:    "JetBrains Mono", SFMono-Regular, ui-monospace, monospace;
+
+  /* Device chrome dimensions */
+  --radius-device: 52px;
+  --radius-screen: 44px;
+  --shadow-device: 0 50px 120px -30px rgba(0, 0, 0, 0.7), 0 25px 60px -15px rgba(0, 0, 0, 0.5);
+  --shadow-glass:  inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+:root {
+  --color-lime: #83d63a;
+}
+
+html,
+body,
+#__next {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-ink);
+  color: #f1f1f0;
+  min-height: 100dvh;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Disable native overscroll inside the phone screen so iOS rubber-banding
+   does not break the device frame illusion on desktop browsers. */
+.phone-screen {
+  overscroll-behavior: contain;
+}
+
+/* Prevent gestures fighting page scroll on touch. */
+.phone-screen,
+.phone-home-indicator,
+.phone-status-bar {
+  touch-action: pan-y;
+}
+
+/* The desktop backdrop: a dark room with a subtle XO-tinted glow. */
+.phone-backdrop {
+  background:
+    radial-gradient(circle at 30% 20%, rgba(131, 214, 58, 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 70% 80%, rgba(131, 214, 58, 0.05) 0%, transparent 60%),
+    var(--color-ink);
+}
+
+/* App icon visual: rounded square with a subtle inset highlight. */
+.app-icon-tile {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.10);
+}
+
+/* Hide the device frame on phones; OS becomes full bleed. */
+@media (max-width: 599px) {
+  .device-frame {
+    border-radius: 0 !important;
+    border-width: 0 !important;
+    box-shadow: none !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+  }
+  .device-frame .device-side-button,
+  .device-frame .device-dynamic-island-cosmetic {
+    display: none !important;
+  }
+  .phone-backdrop {
+    background: var(--color-ink);
+  }
+}
+
+/* a11y */
+*:focus-visible {
+  outline: 2px solid var(--color-lime);
+  outline-offset: 2px;
+}

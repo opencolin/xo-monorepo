@@ -1,0 +1,71 @@
+---
+title: Cursor
+icon: Cursor
+description: Connect the XO MCP Server to Cursor in 2 minutes.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Connect the XO MCP Server to [Cursor](https://cursor.com) so you can run XO's tools right inside your editor.
+
+## Prerequisites
+
+- Cursor (latest version)
+- `uvx` available on your machine
+  - macOS/Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+  - Windows (PowerShell): `irm https://astral.sh/uv/install.ps1 | iex`
+- Your **ACCESS\_TOKEN** and **DEPLOYMENT\_ID** from XO Launchpad
+
+<Steps>
+  <Step>
+    ### Open MCP Tools in Cursor
+
+    Open **Cursor → Settings** (`⌘,` on Mac / `Ctrl+,` on Windows). In the search bar, type **MCP** and click **MCP Tools**.
+  </Step>
+
+  <Step>
+    ### Add the XO MCP Entry
+
+    Click **Add Custom MCP** and paste the following JSON:
+
+    ```json
+    {
+      "mcpServers": {
+        "XO-MCP-Server": {
+          "command": "uvx",
+          "args": [
+            "git+https://github.com/sharmasuraj0123/xo-mcp-server.git"
+          ],
+          "env": {
+            "ACCESS_TOKEN": "<your_access_token>",
+            "DEPLOYMENT_ID": "<your_deployment_id>"
+          }
+        }
+      }
+    }
+    ```
+
+    Replace `ACCESS_TOKEN` and `DEPLOYMENT_ID` with your real credentials.
+  </Step>
+
+  <Step>
+    ### Verify the Connection
+
+    Go to **Settings → Tools & Integrations → MCP Tools**. You should see **XO-MCP-Server** with a green status indicator. Click **Show tools** to see all available XO tools.
+  </Step>
+</Steps>
+
+## Using XO Tools in Cursor
+
+Open a chat in Cursor and describe what you want — for example: "Deploy my app to XO". Cursor surfaces the relevant MCP tools automatically.
+
+## Troubleshooting
+
+- **"command not found: uvx"** — Install `uv` (see prerequisites) and restart Cursor
+- **No tools appear** — Double-check your JSON syntax. The entry must be under `"mcpServers"`
+- **Auth errors** — Verify your `ACCESS_TOKEN` and `DEPLOYMENT_ID` are correct and active
+
+<Callout type="warn">
+  Never commit real tokens to Git. If using project-level `.cursor/mcp.json`, add it to `.gitignore`.
+</Callout>

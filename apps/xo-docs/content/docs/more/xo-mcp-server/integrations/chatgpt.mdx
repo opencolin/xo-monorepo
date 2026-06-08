@@ -1,0 +1,63 @@
+---
+title: ChatGPT
+icon: OpenAI
+description: Use the XO GPT to share context between ChatGPT and XO Workspaces.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Use the XO GPT inside ChatGPT to share conversation context into XO Workspaces and query project knowledge without leaving your chat.
+
+## What You Get
+
+- **Share with XO** — Save your current ChatGPT conversation into an XO Workspaces project
+- **@XO \<question>** — Ask questions against knowledge stored in an XO Workspaces project
+
+<Steps>
+  <Step>
+    ### Open the XO GPT
+
+    In ChatGPT (Web or App), search for **"XO"** in the GPTs section. Select **XO** (creator: *Suraj Sharma*).
+
+    Or open directly: [XO on ChatGPT](https://chatgpt.com/g/g-685a1c71cabc8191807c84dcb654df17-xo)
+  </Step>
+
+  <Step>
+    ### Share Your Chat with XO
+
+    In the XO GPT, type:
+
+    ```
+    Share with XO
+    ```
+
+    XO will prompt you for a **Project ID**. Paste the ID and press Enter. You'll get a confirmation that the conversation was saved.
+
+    <Callout type="info">
+      Find your Project ID in **XO Workspaces → Projects** — it appears in the URL after `/projects/`.
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Ask a Question
+
+    Type:
+
+    ```
+    @XO <your question>
+    ```
+
+    XO will prompt for a Project ID, then return the answer from your project's knowledge base.
+  </Step>
+</Steps>
+
+## Why This Matters
+
+XO GPT solves the context-sharing problem. Instead of starting over every time you switch tools, you can capture ideas in ChatGPT, share them to XO Workspaces, and re-use the same context in Cursor or other MCP-compatible platforms using the same Project ID.
+
+## Security
+
+- Project IDs and shared data stay private in your XO Workspaces account
+- XO does not retain data outside your projects
+- Never share Project IDs publicly

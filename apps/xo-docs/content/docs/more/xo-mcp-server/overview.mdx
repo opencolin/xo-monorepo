@@ -1,0 +1,27 @@
+---
+title: Overview
+icon: Info
+description: How the XO MCP Server works and what it provides.
+---
+
+The XO MCP Server is built on the FastMCP framework and integrates RESTful APIs with XO backend services. It uses environment-based configuration for security and a modular architecture for extensibility.
+
+## Available Tools
+
+| Tool | Description |
+|---|---|
+| `deploy_to_xo` | Push a containerised app to XO |
+| `start_xo_app` | Activate a previously deployed application |
+| `stop_xo_app` | Halt a running app without deleting it |
+| `remove_xo_app` | Completely remove an application |
+| `get_xo_app_logs` | Access real-time application logs |
+| `expose_xo_app` | Expose a service with a public URL |
+| `update_knowledgebase_using_text` | Update an XO Swarm knowledge base |
+| `ask_question` | Query a knowledge base |
+
+## Technical Foundation
+
+- Built on the **FastMCP framework**
+- Integrates with XO backend via RESTful APIs
+- Environment-based configuration (no hardcoded credentials)
+- Modular — new tools can be added without breaking existing integrations

@@ -1,0 +1,64 @@
+---
+title: Claude
+icon: Anthropic
+description: Connect the XO MCP Server to Claude via Custom Connectors.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+
+Connect XO to Claude Web using Claude's Custom Connector feature.
+
+## Connection Details
+
+- **Transport:** Remote MCP via Claude Custom Connector
+- **Server URL:**
+  ```
+  https://dev-xo-mcp-sse-server-xo-nclz7e.hello-xo.nl/mcp
+  ```
+- **Auth:** None by default
+
+## Prerequisites
+
+- Access to Claude with **Custom Connectors** enabled
+- The XO MCP server URL above
+
+<Steps>
+  <Step>
+    ### Open Connector Settings
+
+    Open [Claude](https://claude.ai) in your browser. Click your **profile → Settings → Connectors**.
+  </Step>
+
+  <Step>
+    ### Add a Custom Connector
+
+    Scroll to the bottom and click **Add custom connector**. Paste the XO MCP Server URL:
+
+    ```
+    https://dev-xo-mcp-sse-server-xo-nclz7e.hello-xo.nl/mcp
+    ```
+
+    Click **Add**.
+  </Step>
+
+  <Step>
+    ### Complete Authentication (if required)
+
+    If your XO server requires auth, Claude will prompt you. Follow the prompts to finish the connection.
+  </Step>
+
+  <Step>
+    ### Verify and Use
+
+    After connecting, the server's resources appear in the **paperclip (attachment) menu** in any chat. Go to **Settings → Connectors → XO** to enable/disable specific tools.
+  </Step>
+</Steps>
+
+## Available Tools After Connecting
+
+- `deploy_to_xo`
+- `start_xo_app` / `stop_xo_app` / `remove_xo_app`
+- `get_xo_app_logs`
+- `expose_xo_app`
+- `update_knowledgebase_using_text`
+- `ask_question`

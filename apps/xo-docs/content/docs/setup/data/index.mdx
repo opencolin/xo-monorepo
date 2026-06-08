@@ -1,0 +1,42 @@
+---
+title: Data Sources
+description: Connect external accounts so your agent can read from them.
+icon: HardDrive
+---
+
+import { Cards, Card } from "@/components/card";
+
+Data sources let your agent read from external accounts. Credentials live in your project's workspace, not on the XO platform.
+
+Open the **Setup** tab on your project page and select **Data** to manage connections.
+
+---
+
+## Available Connectors
+
+<Cards>
+	<Card
+		icon={<BrandIcon name="google-drive" size={20} />}
+		title="Google Drive"
+		description="Read documents, sheets, and folders from Google Drive."
+		href="/setup/data/google-drive"
+	/>
+	<Card
+		icon={<BrandIcon name="onedrive" size={20} />}
+		title="OneDrive"
+		description="Read files from Microsoft OneDrive."
+		href="/setup/data/onedrive"
+	/>
+	<Card
+		icon={<BrandIcon name="github" size={20} />}
+		title="GitHub"
+		description="Read repositories, issues, and pull requests from GitHub."
+		href="/setup/data/github"
+	/>
+	<Card
+		icon={<BrandIcon name="vercel" size={20} />}
+		title="Vercel"
+		description="Read deployments and project metadata from Vercel."
+		href="/setup/data/vercel"
+	/>
+</Cards>

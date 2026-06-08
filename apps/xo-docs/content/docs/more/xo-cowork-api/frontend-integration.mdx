@@ -1,0 +1,460 @@
+---
+title: Frontend Integration
+icon: Terminal
+description: End-to-end TypeScript examples for building a chat UI, file browser, and project flow.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+This page is a copy-pasteable cookbook. Every snippet is TypeScript, uses standard `fetch` plus `EventSource`, and assumes you have already resolved the `BASE` URL (see [Overview](/more/xo-cowork-api/overview)).
+
+```typescript
+const BASE = "http://localhost:5002";   // or your tunnel URL
+```
+
+## 1. A minimal API client
+
+Wrap `fetch` once so error handling is consistent:
+
+```typescript
+async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new ApiError(res.status, body.detail ?? res.statusText);
+  }
+  return res.json() as Promise<T>;
+}
+
+class ApiError extends Error {
+  constructor(public status: number, message: string) {
+    super(message);
+  }
+}
+```
+
+For multipart upload bodies, drop the `Content-Type` so the browser fills in the boundary:
+
+```typescript
+async function apiUpload<T>(path: string, body: FormData): Promise<T> {
+  const res = await fetch(`${BASE}${path}`, { method: "POST", body });
+  if (!res.ok) throw new ApiError(res.status, await res.text());
+  return res.json() as Promise<T>;
+}
+```
+
+## 2. Send a chat turn end-to-end
+
+The two-call dance, with React Strict Mode and abort handling:
+
+```typescript
+type PromptResponse = { stream_id: string; session_id: string | null };
+
+async function startTurn(args: {
+  text: string;
+  sessionId?: string;
+  agentName?: "openclaw" | "claude_code";
+  agentId?: string;
+  agentType?: string;
+  workspace?: string;
+}): Promise<PromptResponse> {
+  return api<PromptResponse>("/api/chat/prompt", {
+    method: "POST",
+    body: JSON.stringify({
+      text:       args.text,
+      session_id: args.sessionId,
+      agent_name: args.agentName,
+      agent_id:   args.agentId,
+      agent_type: args.agentType,
+      workspace:  args.workspace,
+    }),
+  });
+}
+
+function openStream(streamId: string, handlers: {
+  onSession?: (id: string) => void;
+  onDelta:    (text: string) => void;
+  onError?:   (msg: string) => void;
+  onDone?:    (sessionId: string) => void;
+}): () => void {
+  const es = new EventSource(`${BASE}/api/chat/stream/${streamId}`);
+
+  es.addEventListener("session-created", (e) => {
+    const { session_id } = JSON.parse((e as MessageEvent).data);
+    handlers.onSession?.(session_id);
+  });
+
+  es.addEventListener("text-delta", (e) => {
+    const { text } = JSON.parse((e as MessageEvent).data);
+    handlers.onDelta(text);
+  });
+
+  // heartbeat: ignore content; reset your dead-stream timer here
+  es.addEventListener("heartbeat", () => {});
+
+  es.addEventListener("agent-error", (e) => {
+    const { error_message } = JSON.parse((e as MessageEvent).data);
+    handlers.onError?.(error_message);
+    es.close();
+  });
+
+  es.addEventListener("done", (e) => {
+    const { session_id } = JSON.parse((e as MessageEvent).data);
+    handlers.onDone?.(session_id);
+    es.close();
+  });
+
+  es.addEventListener("error", (e) => {
+    const data = (e as MessageEvent).data;
+    if (data) {
+      const { error_message } = JSON.parse(data);
+      handlers.onError?.(error_message);
+    }
+    es.close();
+  });
+
+  // Return a cleanup function the caller can use on unmount
+  return () => es.close();
+}
+
+async function abortStream(streamId: string): Promise<void> {
+  await api("/api/chat/abort", {
+    method: "POST",
+    body: JSON.stringify({ stream_id: streamId }),
+  });
+}
+```
+
+Putting it together:
+
+```typescript
+const { stream_id, session_id } = await startTurn({
+  text: "Refactor the auth flow",
+  agentName: "claude_code",
+  agentId: "blackhole",
+  agentType: "research",
+});
+
+if (session_id) router.push(`/c/${session_id}`);
+
+let assistantText = "";
+const close = openStream(stream_id, {
+  onSession: (id) => router.push(`/c/${id}`),
+  onDelta:   (chunk) => { assistantText += chunk; render(assistantText); },
+  onError:   (msg) => toast.error(msg),
+  onDone:    () => finalize(assistantText),
+});
+
+// Cancel from a button or unmount:
+// close(); abortStream(stream_id);
+```
+
+## 3. React hook (with Strict Mode safety)
+
+```tsx
+import { useEffect, useRef, useState } from "react";
+
+export function useChatTurn() {
+  const [streaming, setStreaming] = useState(false);
+  const [text,      setText]      = useState("");
+  const closeRef = useRef<(() => void) | null>(null);
+  const streamIdRef = useRef<string | null>(null);
+
+  async function send(input: { text: string; sessionId?: string }) {
+    setStreaming(true);
+    setText("");
+
+    const { stream_id } = await startTurn({
+      text:      input.text,
+      sessionId: input.sessionId,
+    });
+    streamIdRef.current = stream_id;
+
+    closeRef.current = openStream(stream_id, {
+      onDelta: (chunk) => setText((prev) => prev + chunk),
+      onDone:  () => setStreaming(false),
+      onError: () => setStreaming(false),
+    });
+  }
+
+  useEffect(() => {
+    return () => {
+      // React Strict Mode mounts the effect twice in dev. The reconnect-mode
+      // path on the server makes the second open non-destructive, so the
+      // worst case here is a no-op cleanup.
+      closeRef.current?.();
+    };
+  }, []);
+
+  function cancel() {
+    closeRef.current?.();
+    if (streamIdRef.current) abortStream(streamIdRef.current);
+    setStreaming(false);
+  }
+
+  return { streaming, text, send, cancel };
+}
+```
+
+## 4. Hydrate message history
+
+```typescript
+type Message = {
+  id: string;
+  role: "user" | "assistant" | "tool";
+  text?: string;
+  tool_call?: unknown;
+  tool_result?: unknown;
+  timestamp: string;
+};
+
+type MessagesPage = { total: number; offset: number; messages: Message[] };
+
+// First load: tail of the conversation (offset=-1 default)
+const tail = await api<MessagesPage>(`/api/messages/${sessionId}?limit=50`);
+
+// Page backward
+const older = await api<MessagesPage>(
+  `/api/messages/${sessionId}?limit=50&offset=${Math.max(0, tail.offset - 50)}`
+);
+```
+
+## 5. Create a project (with scaffold)
+
+```typescript
+type WorkspaceConfig = { roots: Record<string, string>; default: string };
+
+async function createProject(slug: string, displayName: string, description = "") {
+  const cfg = await api<WorkspaceConfig>("/api/config/workspace");
+  const projectsRoot = cfg.roots[cfg.default];
+
+  try {
+    return await api<{ path: string; name: string; copied: string[] }>(
+      "/api/files/mkdir",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          path:         `${projectsRoot}/${slug}`,
+          scaffold:     true,
+          display_name: displayName,
+          description,
+        }),
+      },
+    );
+  } catch (e) {
+    if (e instanceof ApiError && e.status === 409) {
+      // Project already exists
+      return { path: `${projectsRoot}/${slug}`, name: slug, copied: [] };
+    }
+    throw e;
+  }
+}
+```
+
+## 6. File browser
+
+```typescript
+type DirEntry = { name: string; path: string };
+type DirListing = {
+  path: string;
+  parent: string | null;
+  dirs: DirEntry[];
+  files: DirEntry[];
+};
+
+async function listDir(path?: string): Promise<DirListing> {
+  return api<DirListing>("/api/files/list-directory", {
+    method: "POST",
+    body: JSON.stringify({ path }),
+  });
+}
+
+async function readText(path: string): Promise<string> {
+  const { content } = await api<{ content: string; path: string }>(
+    "/api/files/content",
+    { method: "POST", body: JSON.stringify({ path }) },
+  );
+  return content;
+}
+
+async function saveText(path: string, content: string): Promise<number> {
+  const { bytes } = await api<{ path: string; bytes: number }>(
+    "/api/files/save",
+    { method: "POST", body: JSON.stringify({ path, content }) },
+  );
+  return bytes;
+}
+
+async function downloadBinary(path: string): Promise<Blob> {
+  const res = await fetch(`${BASE}/api/files/content-binary`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ path }),
+  });
+  if (!res.ok) throw new ApiError(res.status, (await res.json()).detail);
+  return res.blob();
+}
+```
+
+## 7. Upload from `<input type="file">`
+
+```typescript
+async function uploadFile(file: File, workspace?: string) {
+  const fd = new FormData();
+  fd.append("file", file);
+  if (workspace) fd.append("workspace", workspace);
+
+  return apiUpload<{
+    file_id: string;
+    name: string;
+    path: string;
+    size: number;
+    mime_type: string;
+    source: "uploaded";
+    content_hash: string;
+  }>("/api/files/upload", fd);
+}
+
+// Wire it to a hidden input
+<input
+  type="file"
+  onChange={async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const meta = await uploadFile(f, "/Users/me/xo-projects/blackhole/uploads");
+    console.log("uploaded to", meta.path);
+  }}
+/>
+```
+
+## 8. Settings: env vars
+
+```typescript
+type Entry = { key: string; value: string };
+
+async function loadEnv(): Promise<Entry[]> {
+  const { entries } = await api<{ entries: Entry[] }>("/api/secrets/env");
+  return entries;
+}
+
+async function saveEnv(entries: Entry[]): Promise<void> {
+  await api("/api/secrets/env", {
+    method: "PUT",
+    body: JSON.stringify({ entries }),
+  });
+}
+
+// Onboarding: is a key configured? (no value on the wire)
+async function hasKey(name: string): Promise<boolean> {
+  const { keys } = await api<{ keys: string[] }>("/api/secrets/env/keys");
+  return keys.includes(name);
+}
+```
+
+## 9. Sessions sidebar
+
+```typescript
+type SessionMeta = {
+  session_id: string;
+  title: string;
+  agent_id: string;
+  agent_name: string;
+  updated_at: string;
+  directory?: string;
+  message_count: number;
+};
+
+type SessionsPage = { total: number; offset: number; sessions: SessionMeta[] };
+
+async function listSessions(limit = 50, offset = 0): Promise<SessionsPage> {
+  return api<SessionsPage>(`/api/sessions?limit=${limit}&offset=${offset}`);
+}
+
+async function searchSessions(q: string): Promise<SessionsPage> {
+  return api<SessionsPage>(
+    `/api/sessions/search?q=${encodeURIComponent(q)}&limit=50`
+  );
+}
+
+async function setSessionDirectory(sessionId: string, directory: string) {
+  return api(`/api/sessions/${sessionId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ directory }),
+  });
+}
+```
+
+## 10. App-load bootstrap
+
+Run these in parallel on app boot:
+
+```typescript
+async function bootstrap() {
+  const [whoami, cfg, models, onboarding] = await Promise.all([
+    api<{ user_id: string; email: string }>("/xo-auth/whoami").catch(() => null),
+    api<{ roots: Record<string, string>; default: string }>("/api/config/workspace"),
+    api<{ models: Array<{ id: string; name: string }> }>("/api/models"),
+    api<{ onboarding_completed: boolean }>("/api/onboarding"),
+  ]);
+
+  if (!whoami) return showSignIn();
+  if (!onboarding.onboarding_completed) return showOnboardingWizard();
+
+  return {
+    user: whoami,
+    projectsRoot: cfg.roots[cfg.default],
+    models: models.models,
+  };
+}
+```
+
+See [Auth API](/more/xo-cowork-api/auth-api), [Config API](/more/xo-cowork-api/config-api), and [Connectors API](/more/xo-cowork-api/connectors-api) for the flows that follow.
+
+## 11. Tying it together: a chat-to-disk lifecycle
+
+```
+1. User types a message in the composer.
+2. POST /api/chat/prompt → {stream_id, session_id}.
+3. router.push(`/c/${session_id}`) immediately if session_id is set.
+4. GET /api/chat/stream/{stream_id} (EventSource) until `done`.
+5. Optimistically render text-deltas as they arrive.
+6. On `done`, refetch GET /api/messages/{session_id} for the canonical record.
+7. If user navigates away mid-stream:
+     a. Call cleanup() (closes EventSource).
+     b. POST /api/chat/abort to drop the stream bookkeeping.
+     c. The runtime keeps running server-side; messages are still persisted.
+8. To resume that session later, send a new prompt with session_id set.
+```
+
+## Tauri-specific notes
+
+If you're embedding inside the Tauri desktop shell:
+
+- Use `desktopAPI.getBackendUrl()` instead of hardcoding `BASE`.
+- Listen for the `backend-restart` event from the Rust shell and re-establish your SSE streams when it fires.
+- Use `download_and_save` (Tauri command) for native save sheets when downloading from `/api/files/content-binary`.
+- For deep links, call `get_pending_navigation` on app boot to resume from a system URL handler.
+
+## Common gotchas
+
+<Callout type="warn">
+**Reach for `event:` listeners, not `onmessage`.** All `/api/chat/stream/*` events are named (`session-created`, `text-delta`, `heartbeat`, `agent-error`, `done`, `error`). The default `onmessage` channel only fires for unkeyed `data:` events, which the new chat API never emits.
+</Callout>
+
+<Callout type="warn">
+**Always send absolute paths.** Every filesystem endpoint resolves with `Path.resolve()` against the cowork-api process CWD. Sending relative paths gives unpredictable results.
+</Callout>
+
+<Callout type="warn">
+**Strings in `content`.** `/api/files/save` rejects anything that isn't a JSON string. Numbers, objects, and `null` all return 400.
+</Callout>
+
+<Callout type="info">
+**Don't hardcode `~/xo-projects`.** The `XO_PROJECTS_ROOT` env var on the server side overrides it. Always discover the projects root via `GET /api/config/workspace` first.
+</Callout>

@@ -1,0 +1,54 @@
+{
+  "name": "xo-phone-os",
+  "version": "0.0.1",
+  "private": true,
+  "description": "XO Phone OS: iPhone-style website. On a phone the viewport IS the phone; on desktop you see a phone sitting on the desktop with the OS running inside it.",
+  "author": "XO Labs",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "next dev --turbopack -p 18002",
+    "build": "next build",
+    "start": "next start -p 18002",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "framer-motion": "^11.5.4",
+    "next": "16.2.6",
+    "next-mdx-remote": "^6.0.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^20.14.10",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vitejs/plugin-react": "^6.0.2",
+    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/ui": "^4.1.6",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.2.6",
+    "happy-dom": "^20.9.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.5.3",
+    "vitest": "^4.1.6"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

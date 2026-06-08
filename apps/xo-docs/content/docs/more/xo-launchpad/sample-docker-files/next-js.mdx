@@ -1,0 +1,28 @@
+---
+title: Next.js
+icon: NextJs
+description: Dockerfile for Next.js applications on XO Launchpad.
+---
+
+```dockerfile
+FROM node:20
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source and build
+COPY . .
+RUN npm run build
+
+# Expose Next.js default port
+EXPOSE 3000
+
+# Start Next.js app
+CMD ["npm", "start"]
+```
+
+Uses Node.js 20, builds the Next.js app for production, and starts it on port `3000`.
+
+For optimised builds, consider using a multi-stage Dockerfile to reduce image size.

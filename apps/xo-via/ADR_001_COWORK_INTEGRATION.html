@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADR-001: xo-phone-os ↔ xo-cowork-api Integration</title>
+  <style>
+    :root {
+      --lime: #83d63a;
+      --lime-soft: rgba(131, 214, 58, 0.15);
+      --lime-edge: rgba(131, 214, 58, 0.55);
+      --ink: #08090A;
+      --ink-2: #131416;
+      --ink-3: #1c1c1e;
+      --text: #ffffff;
+      --text-2: rgba(255,255,255,0.72);
+      --text-3: rgba(255,255,255,0.5);
+      --divider: rgba(255,255,255,0.08);
+      --amber: #ffb547;
+      --amber-soft: rgba(255, 181, 71, 0.12);
+      --red: #ff6b6b;
+      --red-soft: rgba(255, 107, 107, 0.12);
+      --blue: #64b5f6;
+      --blue-soft: rgba(100, 181, 246, 0.12);
+      --green-soft: rgba(131, 214, 58, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--ink); color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      line-height: 1.6; -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 1060px; margin: 0 auto; padding: 52px 24px 96px; }
+
+    /* Header */
+    header { border-bottom: 1px solid var(--divider); padding-bottom: 28px; margin-bottom: 40px; }
+    .adr-meta { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .badge {
+      display: inline-block; padding: 4px 12px; border-radius: 999px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .badge-proposed { background: var(--amber-soft); color: var(--amber); border: 1px solid rgba(255,181,71,0.4); }
+    .badge-number   { background: var(--ink-3); color: var(--text-2); border: 1px solid var(--divider); }
+    .badge-date     { background: var(--ink-3); color: var(--text-3); border: 1px solid var(--divider); font-weight: 600; }
+    h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 8px; }
+    .lead { color: var(--text-2); font-size: 15px; margin: 0; }
+
+    /* Sections */
+    h2 {
+      font-size: 20px; font-weight: 700; letter-spacing: -0.01em;
+      margin: 52px 0 10px; padding-bottom: 8px;
+      border-bottom: 1px solid var(--divider);
+    }
+    h2 .icon { margin-right: 10px; }
+    h3 { font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--text-3); margin: 24px 0 10px; }
+    p  { color: var(--text-2); margin: 12px 0; }
+    p strong { color: var(--text); font-weight: 600; }
+    code {
+      background: var(--ink-3); padding: 2px 6px; border-radius: 4px;
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 12px; color: var(--lime);
+    }
+
+    /* Pre / code blocks */
+    pre {
+      background: var(--ink-2); border: 1px solid var(--divider);
+      border-radius: 12px; padding: 18px;
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 12px; line-height: 1.55; overflow-x: auto; color: var(--text);
+    }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 13px; }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--divider); }
+    th { background: var(--ink-3); font-weight: 700; font-size: 11px;
+      text-transform: uppercase; letter-spacing: 0.04em; color: var(--text); }
+    tbody tr:hover { background: var(--ink-2); }
+
+    /* Status chips inside table */
+    .exists  { color: var(--lime); font-weight: 700; }
+    .partial { color: var(--amber); font-weight: 700; }
+    .blocker { color: var(--red); font-weight: 700; }
+
+    /* Cards */
+    .card {
+      border: 1px solid var(--divider); border-radius: 14px;
+      background: var(--ink-2); padding: 20px 22px; margin: 14px 0;
+    }
+    .card.info   { background: linear-gradient(180deg, var(--blue-soft), transparent), var(--ink-2);
+      border-color: rgba(100,181,246,0.3); }
+    .card.warn   { background: linear-gradient(180deg, var(--amber-soft), transparent), var(--ink-2);
+      border-color: rgba(255,181,71,0.4); }
+    .card.ok     { background: linear-gradient(180deg, var(--green-soft), transparent), var(--ink-2);
+      border-color: var(--lime-edge); }
+    .card h4 { margin: 0 0 8px; font-size: 14px; font-weight: 700; }
+    .card.info h4 { color: var(--blue); }
+    .card.warn h4 { color: var(--amber); }
+    .card.ok   h4 { color: var(--lime); }
+    .card p { margin: 6px 0; font-size: 13.5px; }
+
+    /* Blocker section */
+    .blockers-box {
+      border: 2px solid var(--red);
+      background: var(--red-soft);
+      border-radius: 16px;
+      padding: 24px 26px;
+      margin: 18px 0;
+    }
+    .blockers-box h2 { border-bottom-color: rgba(255,107,107,0.3); color: var(--red); margin-top: 0; }
+    .blocker-item {
+      border: 1px solid rgba(255,107,107,0.3);
+      background: rgba(255,107,107,0.06);
+      border-radius: 10px; padding: 16px 18px; margin: 12px 0;
+    }
+    .blocker-item h4 { margin: 0 0 8px; color: var(--red); font-size: 14px; }
+    .blocker-item p  { font-size: 13px; color: var(--text); margin: 6px 0; }
+    .blocker-item pre { margin: 8px 0 0; font-size: 11.5px; }
+
+    /* Flow diagram */
+    pre.flow {
+      background: var(--ink); border: 1px solid var(--divider);
+      border-radius: 10px; padding: 16px 18px; font-size: 11.5px; line-height: 1.6;
+    }
+
+    /* Route list */
+    .route-list { list-style: none; padding: 0; margin: 12px 0; }
+    .route-list li {
+      display: grid; grid-template-columns: 260px 1fr;
+      gap: 12px; padding: 8px 0;
+      border-bottom: 1px solid var(--divider); font-size: 13px;
+    }
+    .route-list li:first-child { border-top: 1px solid var(--divider); }
+    .route-list .route { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--lime); }
+    .route-list .target { color: var(--text-2); }
+    .route-list .blocker-tag {
+      display: inline-block; padding: 1px 7px; border-radius: 4px;
+      background: var(--red-soft); color: var(--red);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      margin-left: 6px;
+    }
+    .route-list .ok-tag {
+      display: inline-block; padding: 1px 7px; border-radius: 4px;
+      background: var(--lime-soft); color: var(--lime);
+      font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+      margin-left: 6px;
+    }
+
+    /* Action items */
+    .action-list { list-style: none; padding: 0; margin: 14px 0; }
+    .action-list li {
+      padding: 8px 0 8px 28px; position: relative;
+      font-size: 13.5px; color: var(--text); border-bottom: 1px solid var(--divider);
+    }
+    .action-list li::before {
+      content: '☐'; position: absolute; left: 4px; color: var(--lime); font-size: 14px; top: 7px;
+    }
+    .action-list .owner { color: var(--text-3); font-size: 12px; margin-left: 8px; }
+
+    footer {
+      margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--divider);
+      color: var(--text-3); font-size: 12px;
+      display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+    }
+
+    @media print {
+      body { background: white; color: black; }
+      pre, pre.flow { background: #f6f6f6 !important; color: #000 !important; border: 1px solid #ccc !important; }
+      .card, .blocker-item { background: white !important; border: 1px solid #ccc !important; }
+      .blockers-box { background: #fff0f0 !important; border: 2px solid #ff6b6b !important; }
+      h1, h2, h3, h4 { color: #000 !important; }
+      p, .lead, .target { color: #222 !important; }
+      .blockers-box h2 { color: #c0392b !important; }
+      .blocker-item h4 { color: #c0392b !important; }
+      h2 { page-break-after: avoid; }
+      table, .card, .blocker-item { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="adr-meta">
+      <span class="badge badge-number">ADR-001</span>
+      <span class="badge badge-proposed">Status: Proposed</span>
+      <span class="badge badge-date">2026-05-20</span>
+    </div>
+    <h1>xo-phone-os &times; xo-cowork-api Integration</h1>
+    <p class="lead">Architecture for how xo-phone-os connects to xo-cowork-api. All calls proxied through Next.js. Five capabilities needed. Two blockers on xo-cowork-api side.</p>
+  </header>
+
+  <!-- Context -->
+  <h2><span class="icon">📐</span>Context</h2>
+  <p>xo-phone-os (Next.js 16) is a phone-OS-style frontend. It needs to interact with xo-cowork-api (FastAPI, port 5002) to power projects, files, and agent chat. The workspace rule (CLAUDE.md §4) requires <strong>all API calls to be server-side only</strong>: browser never hits cowork-api directly. The phone OS needs exactly five capabilities from cowork-api:</p>
+
+  <div class="card ok">
+    <h4>The five capabilities needed</h4>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Capability</th><th>Need</th><th>Cowork-api status</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td><strong>Create project</strong></td>
+          <td>Initialize a new project workspace for a user</td>
+          <td><span class="partial">⚠ PARTIAL</span> — no single atomic endpoint; workaround via <code>/api/files/mkdir?scaffold=true</code> + <code>POST /api/agents</code></td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td><strong>Get project</strong></td>
+          <td>All files + metadata + agent config for a project</td>
+          <td><span class="blocker">✗ BLOCKER</span> — no unified endpoint; requires 2+ calls composed on Next.js side</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td><strong>Chat (one session)</strong></td>
+          <td>Send a message and stream the response. One session per user.</td>
+          <td><span class="exists">✓ EXISTS</span> — two-step: <code>POST /api/chat/prompt</code> → <code>GET /api/chat/stream/{id}</code></td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td><strong>All files in a project</strong></td>
+          <td>List + read files within a project directory</td>
+          <td><span class="exists">✓ EXISTS</span> — <code>POST /api/files/list-directory</code> + <code>POST /api/files/content</code></td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td><strong>Health</strong></td>
+          <td>Is cowork-api reachable?</td>
+          <td><span class="exists">✓ EXISTS</span> — <code>GET /health</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Decision -->
+  <h2><span class="icon">⚖️</span>Decision</h2>
+  <p><strong>Every request from the browser goes to a Next.js Route Handler first. Next.js injects auth and forwards to xo-cowork-api.</strong> The browser never sees port 5002 or any API keys.</p>
+
+  <pre class="flow">
+Browser (xo-phone-os)
+    │
+    │  All calls to /api/*  (never to :5002 directly)
+    │  Clerk session cookie attached automatically
+    │
+    ▼
+Next.js Route Handlers  (:18002)
+    │
+    │  1. const username = await getClerkUsername(req)
+    │  2. Authorization: Bearer ${process.env.XO_API_KEY}
+    │  3. X-XO-Username: ${username || "__operator__"}
+    │  4. forward to http://localhost:5002${path}
+    │  5. return response.body (or pipe SSE stream)
+    │
+    ▼
+xo-cowork-api  (:5002)
+    │
+    │  Scopes data by X-XO-Username
+    │  Validates XO_API_KEY
+    │
+    ▼
+Claude Code / OpenClaw / Codex
+  </pre>
+
+  <!-- Options -->
+  <h2><span class="icon">🔀</span>Options Considered</h2>
+
+  <div class="card info">
+    <h4>Option A (chosen): Next.js proxy layer</h4>
+    <p>Browser calls <code>/api/*</code> on Next.js. Next.js calls cowork-api with auth injected. Keys never leave the server. One architecture rule in CLAUDE.md covers all future endpoints.</p>
+    <p><strong>Pros:</strong> Key safety enforced architecturally. Single point for rate limiting, abuse detection, Clerk auth. CORS never an issue. Consistent with workspace rule.</p>
+    <p><strong>Cons:</strong> Extra network hop (milliseconds on localhost, negligible). Need a Next.js route per cowork-api endpoint we expose.</p>
+  </div>
+
+  <div class="card">
+    <h4>Option B (rejected): Direct browser → cowork-api</h4>
+    <p>Browser calls <code>http://localhost:5002/api/*</code> directly. XO_API_KEY would need to be prefixed <code>NEXT_PUBLIC_</code>, exposing it in client bundle.</p>
+    <p><strong>Why rejected:</strong> Violates CLAUDE.md §4. Key exposed. CORS configuration required on cowork-api for every new phone-os origin. No central audit/rate-limit point.</p>
+  </div>
+
+  <!-- Route Design -->
+  <h2><span class="icon">🛣️</span>Next.js Route Handler Design</h2>
+  <p>One file per cowork-api capability. Each is ~30 LOC: read Clerk username, attach headers, forward, return. SSE routes pipe the upstream stream body directly.</p>
+
+  <ul class="route-list">
+    <li>
+      <span class="route">GET /api/cowork/health</span>
+      <span class="target">→ <code>GET /health</code> <span class="ok-tag">exists</span></span>
+    </li>
+    <li>
+      <span class="route">GET /api/cowork/workspace</span>
+      <span class="target">→ <code>GET /api/config/workspace</code> <span class="ok-tag">exists</span> — returns projects root path; call this first on boot</span>
+    </li>
+    <li>
+      <span class="route">POST /api/cowork/projects</span>
+      <span class="target">→ Workaround: <code>POST /api/files/mkdir</code> (<code>scaffold:true</code>) + <code>POST /api/agents</code> <span class="blocker-tag">partial</span></span>
+    </li>
+    <li>
+      <span class="route">GET /api/cowork/projects/[id]</span>
+      <span class="target">→ Composed: <code>GET /api/agents/{id}</code> + <code>POST /api/files/list-directory</code> <span class="blocker-tag">blocker</span></span>
+    </li>
+    <li>
+      <span class="route">GET /api/cowork/projects/[id]/files</span>
+      <span class="target">→ <code>POST /api/files/list-directory</code> with <code>{"path": project.workspace}</code> <span class="ok-tag">exists</span></span>
+    </li>
+    <li>
+      <span class="route">GET /api/cowork/projects/[id]/files/read</span>
+      <span class="target">→ <code>POST /api/files/content</code> with <code>{"path": filePath}</code> <span class="ok-tag">exists</span></span>
+    </li>
+    <li>
+      <span class="route">POST /api/chat</span>
+      <span class="target">→ <code>POST /api/chat/prompt</code> — returns <code>{stream_id, session_id}</code> <span class="ok-tag">exists</span></span>
+    </li>
+    <li>
+      <span class="route">GET /api/chat/stream/[id]</span>
+      <span class="target">→ <code>GET /api/chat/stream/{stream_id}</code> — SSE pipe <span class="ok-tag">exists</span></span>
+    </li>
+    <li>
+      <span class="route">POST /api/chat/abort</span>
+      <span class="target">→ <code>POST /api/chat/abort</code> <span class="ok-tag">exists</span></span>
+    </li>
+  </ul>
+
+  <h3>Route handler pattern (every route, ~30 LOC)</h3>
+  <pre>
+// app/api/cowork/health/route.ts
+export async function GET(req: Request) {
+  const username = await getClerkUsername(req)   // reads Clerk session
+  const upstream = await fetch(
+    `${process.env.COWORK_API_URL}/health`,
+    {
+      headers: {
+        "Authorization": `Bearer ${process.env.XO_API_KEY}`,
+        "X-XO-Username":  username ?? "__operator__",
+      },
+    }
+  )
+  return new Response(upstream.body, {
+    status: upstream.status,
+    headers: { "Content-Type": upstream.headers.get("Content-Type") ?? "application/json" },
+  })
+}
+  </pre>
+
+  <h3>SSE proxy pattern (chat stream route)</h3>
+  <pre>
+// app/api/chat/stream/[id]/route.ts
+export async function GET(req: Request, { params }: { params: { id: string } }) {
+  const username = await getClerkUsername(req)
+  const upstream = await fetch(
+    `${process.env.COWORK_API_URL}/api/chat/stream/${params.id}`,
+    {
+      headers: {
+        "Authorization": `Bearer ${process.env.XO_API_KEY}`,
+        "X-XO-Username":  username ?? "__operator__",
+      },
+    }
+  )
+  // Pipe the SSE stream directly to the browser
+  return new Response(upstream.body, {
+    status: upstream.status,
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection":    "keep-alive",
+    },
+  })
+}
+  </pre>
+
+  <!-- Auth flow -->
+  <h2><span class="icon">🔐</span>Auth + Session Model</h2>
+
+  <h3>Header injection (all routes)</h3>
+  <table>
+    <thead>
+      <tr><th>Header</th><th>Value</th><th>Where it comes from</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>Authorization</code></td>
+        <td><code>Bearer ${XO_API_KEY}</code></td>
+        <td>Server-side env. Never client-readable. Never <code>NEXT_PUBLIC_</code>.</td>
+      </tr>
+      <tr>
+        <td><code>X-XO-Username</code></td>
+        <td>Clerk username, or <code>"__operator__"</code> if signed out</td>
+        <td>Next.js reads Clerk session from cookie; falls back to operator for anonymous visitors.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Single session per user</h3>
+  <p>Each user has exactly <strong>one chat session</strong>, ever. The phone OS never shows a session picker or "new chat" button. When a user sends a message, the Next.js proxy includes their username in <code>X-XO-Username</code>; cowork-api resolves the single session tied to that user automatically. The browser does not need to track or store a <code>session_id</code> across restarts &mdash; the server owns session resolution.</p>
+
+  <div class="card info">
+    <h4>Consequence of single-session model</h4>
+    <p>The Sessions cowork-api endpoint (<code>GET /api/sessions/</code>) is not used. A list of one session is not a useful UI surface. The conversation <em>is</em> the chat dock button. The Sessions app drops from the cowork-derived app catalog.</p>
+  </div>
+
+  <!-- Blockers -->
+  <div class="blockers-box">
+    <h2><span class="icon">🚧</span>Blockers on xo-cowork-api</h2>
+    <p>Two of the five required capabilities do not have clean endpoints in xo-cowork-api today. These must be built on the cowork-api side before the phone OS can go live with full project support.</p>
+
+    <div class="blocker-item">
+      <h4>Blocker 1 — Create project (no atomic endpoint)</h4>
+      <p><strong>What we need:</strong> A single call that creates a project with a given name and returns its <code>id</code> and <code>path</code>.</p>
+      <p><strong>Current workaround:</strong> Two-step composition &mdash; <code>POST /api/files/mkdir</code> with <code>scaffold:true</code> to build the directory tree, then <code>POST /api/agents</code> to register the agent record. This is fragile (if step 2 fails, cleanup needed) and leaks implementation details into the phone OS proxy.</p>
+      <p><strong>Requested endpoint:</strong></p>
+      <pre>
+POST /api/projects
+Request:  { "name": "my-project", "template"?: "default" }
+Response: { "id": "my-project", "name": "My Project",
+            "path": "/Users/me/xo-projects/my-project",
+            "created_at": "ISO timestamp" }
+      </pre>
+      <p><strong>Impact if missing:</strong> Phone OS cannot create new projects until this lands. Workaround two-step is acceptable for an early build but should not ship as the permanent solution.</p>
+    </div>
+
+    <div class="blocker-item">
+      <h4>Blocker 2 — Get project (no unified endpoint)</h4>
+      <p><strong>What we need:</strong> A single call that returns a project's full state: name, path, file tree, and agent configuration.</p>
+      <p><strong>Current workaround:</strong> Three-call composition on the Next.js proxy side &mdash; <code>GET /api/agents/{id}</code> (name + workspace path), then <code>POST /api/files/list-directory</code> (file tree), then <code>GET /api/config/workspace</code> (workspace root, once at boot). The proxy assembles and returns a unified JSON. Works but adds N round-trips per project load.</p>
+      <p><strong>Requested endpoint:</strong></p>
+      <pre>
+GET /api/projects/{id}
+Response: {
+  "id":         "my-project",
+  "name":       "My Project",
+  "path":       "/Users/me/xo-projects/my-project",
+  "files": {
+    "dirs":  ["src", "docs"],
+    "files": ["README.md", "AGENTS.md"]
+  },
+  "agent": {
+    "name":    "my-project",
+    "backend": "claude_code",
+    "workspace": "/Users/me/xo-projects/my-project"
+  },
+  "updated_at": "ISO timestamp"
+}
+      </pre>
+      <p><strong>Impact if missing:</strong> Phone OS loads projects with 3 serial HTTP calls instead of 1. Acceptable for early builds; should be replaced before public launch to reduce latency.</p>
+    </div>
+  </div>
+
+  <!-- Consequences -->
+  <h2><span class="icon">🔄</span>Consequences</h2>
+
+  <h3>What becomes easier</h3>
+  <ul style="color: var(--text-2); padding-left: 22px; font-size: 14px;">
+    <li>API keys are never in the browser bundle. Zero risk of key exposure in client-side JS.</li>
+    <li>CORS never needs to be configured on cowork-api for the phone OS origin.</li>
+    <li>Rate limiting and abuse detection can be applied in one place (the Next.js proxy).</li>
+    <li>Adding a new cowork-api capability is one new Next.js route (~30 LOC).</li>
+    <li>Auth model is uniform: Clerk session everywhere, no special-casing per endpoint.</li>
+  </ul>
+
+  <h3>What becomes harder</h3>
+  <ul style="color: var(--text-2); padding-left: 22px; font-size: 14px;">
+    <li>Every new cowork-api endpoint requires a corresponding Next.js route (minor but real overhead).</li>
+    <li>SSE piping (chat stream) adds one extra in-flight connection on the Next.js server per active chat.</li>
+    <li>Debugging requires two hops: browser → Next.js logs → cowork-api logs.</li>
+  </ul>
+
+  <h3>What we need to revisit</h3>
+  <ul style="color: var(--text-2); padding-left: 22px; font-size: 14px;">
+    <li>Once Blocker 1 + 2 land, the <code>/api/cowork/projects</code> and <code>/api/cowork/projects/[id]</code> Next.js routes need to be simplified from N-call composition to single-call proxies.</li>
+    <li>When Clerk auth is wired (Section G, v.Next+), the <code>getClerkUsername</code> helper expands to return full user context; downstream routes already accept it.</li>
+    <li>If cowork-api ever adds a projects router natively, the phone-os Next.js routes can be slimmed without UI changes.</li>
+  </ul>
+
+  <!-- Action Items -->
+  <h2><span class="icon">✅</span>Action Items</h2>
+
+  <h3>xo-phone-os side (unblocked now)</h3>
+  <ul class="action-list">
+    <li>Create <code>lib/auth/clerk.ts</code> &mdash; <code>getClerkUsername(req)</code> helper reading Clerk session from request <span class="owner">[Section G]</span></li>
+    <li>Create <code>app/api/cowork/health/route.ts</code> &mdash; health probe proxy <span class="owner">[Section B]</span></li>
+    <li>Create <code>app/api/cowork/workspace/route.ts</code> &mdash; proxies <code>/api/config/workspace</code>; call once on boot to discover projects root <span class="owner">[Section B]</span></li>
+    <li>Create <code>app/api/cowork/projects/[id]/files/route.ts</code> &mdash; proxies <code>/api/files/list-directory</code> with project path <span class="owner">[Section B]</span></li>
+    <li>Create <code>app/api/chat/route.ts</code>, <code>stream/[id]/route.ts</code>, <code>abort/route.ts</code> <span class="owner">[Section B]</span></li>
+    <li>Wire browser client (<code>lib/cowork/browser-client.ts</code>) to above routes; browser never references :5002 <span class="owner">[Section B]</span></li>
+    <li>Single-session model: Next.js proxy resolves <code>session_id</code> from username; ChatExpanded does not store it <span class="owner">[Section D + Section B]</span></li>
+    <li>For create/get project: implement N-call composition workaround in <code>app/api/cowork/projects/route.ts</code> pending Blocker 1 + 2 <span class="owner">[Section B]</span></li>
+  </ul>
+
+  <h3>xo-cowork-api side (blockers — separate planning session)</h3>
+  <ul class="action-list">
+    <li><strong>Blocker 1:</strong> Implement <code>POST /api/projects</code> — atomic project creation (mkdir scaffold + agent register) <span class="owner">[cowork-api work]</span></li>
+    <li><strong>Blocker 2:</strong> Implement <code>GET /api/projects/{id}</code> — unified project state (agent + files + metadata in one response) <span class="owner">[cowork-api work]</span></li>
+    <li>Document <code>X-XO-Username</code> header semantics in cowork-api auth docs <span class="owner">[cowork-api work]</span></li>
+    <li>Confirm: does cowork-api scope data per <code>X-XO-Username</code> header today, or is that a new feature? <span class="owner">[cowork-api work]</span></li>
+  </ul>
+
+  <footer>
+    <span>ADR-001 &middot; xo-phone-os &times; xo-cowork-api integration &middot; proposed 2026-05-20</span>
+    <span>See also: COWORK_INTERACTION.html, V_NEXT_PLAN.html, SCREENS.html</span>
+  </footer>
+
+</div>
+</body>
+</html>

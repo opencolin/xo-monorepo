@@ -1,0 +1,68 @@
+---
+title: Manus
+icon: Manus
+description: Connect XO Launchpad to Manus via the Custom MCP integration.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Connect [XO Launchpad](https://launchpad.xo.builders) to [Manus](https://manus.im/app) using the Custom MCP integration. This lets Manus communicate with your deployments, trigger deploys, fetch logs, and more.
+
+<Steps>
+  <Step>
+    ### Open Connectors in Manus
+
+    Log into your Manus workspace. Go to **Settings** (bottom-left corner) and navigate to **Connectors**.
+  </Step>
+
+  <Step>
+    ### Add Custom MCP
+
+    Click **Add Connectors → Custom MCP → Add Custom MCP Server**. In the pop-up, select **Import by JSON**.
+  </Step>
+
+  <Step>
+    ### Paste the XO MCP Server JSON
+
+    ```json
+    {
+      "mcpServers": {
+        "xo-mcp-server": {
+          "command": "uvx",
+          "args": [
+            "git+https://github.com/sharmasuraj0123/xo-mcp-server.git"
+          ],
+          "env": {
+            "ACCESS_TOKEN": "access_token",
+            "DEPLOYMENT_ID": "deployment_id"
+          }
+        }
+      }
+    }
+    ```
+  </Step>
+
+  <Step>
+    ### Replace Placeholders
+
+    - `ACCESS_TOKEN` → Your XO personal access token
+    - `DEPLOYMENT_ID` → The deployment ID from XO Launchpad
+
+    <Callout type="warn">
+      Make sure values are strings — wrap them in quotes as shown above.
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Import and Save
+
+    Click **Import**. Manus will list **xo-mcp-server** as an active connector.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+- **Invalid configuration** — Ensure your JSON is valid (no missing commas or braces). Double-check that credentials are inside quotes.
+- **Connector not showing** — Restart Manus after importing. Verify `uvx` is available on your system.
+- **Deployment not responding** — Ensure the `DEPLOYMENT_ID` matches an active deployment. Check that your access token has the correct permissions.

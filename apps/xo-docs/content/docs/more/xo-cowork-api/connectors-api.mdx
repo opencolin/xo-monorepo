@@ -1,0 +1,326 @@
+---
+title: Connectors API
+icon: Plug2
+description: Google Drive, OneDrive, GitHub, Vercel, and Manus OAuth flows.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The connectors surface manages OAuth flows and credential storage for external systems that agents reach out to. Each connector is filesystem-shaped: it configures a credential file (rclone for Drive/OneDrive, `mcp-tokens.json` for the rest) that downstream tools consume.
+
+## Endpoint summary
+
+```
+gdrive
+  GET    /api/connectors/gdrive/remotes
+  POST   /api/connectors/gdrive/remotes
+  GET    /api/connectors/gdrive/sessions/{session_id}
+  POST   /api/connectors/gdrive/sessions/{session_id}/submit
+  POST   /api/connectors/gdrive/sessions/{session_id}/cancel
+  DELETE /api/connectors/gdrive/remotes/{name}
+
+onedrive   (mirrors gdrive shape)
+
+github
+  POST   /api/connectors/github/token            (manual PAT save)
+  GET    /api/connectors/github/status
+  POST   /api/connectors/github/disconnect
+  POST   /api/connectors/github/reconnect
+  POST   /api/connectors/github/cli/start        (gh device flow)
+  POST   /api/connectors/github/cli/poll
+  POST   /api/connectors/github/cli/cancel
+
+vercel
+  POST   /api/connectors/vercel/token
+  GET    /api/connectors/vercel/status
+  POST   /api/connectors/vercel/disconnect
+  POST   /api/connectors/vercel/reconnect
+  GET    /api/connectors/vercel/oauth/start
+  POST   /api/connectors/vercel/oauth/exchange
+  GET    /callback                               (vercel OAuth callback)
+  GET    /.well-known/oauth-protected-resource   (Dynamic Client Registration)
+
+manus
+  POST   /api/connectors/manus/token
+  GET    /api/connectors/manus/status
+  POST   /api/connectors/manus/disconnect
+  POST   /api/connectors/manus/reconnect
+```
+
+## 1. Google Drive (rclone-backed)
+
+The cowork-api is the OAuth orchestrator; rclone holds the tokens. One file, `<repo>/rclone.conf`, holds every Drive **and** OneDrive remote.
+
+<Callout type="warn">
+Concurrent OAuth flows for Drive and OneDrive are serialized by a single-flight lock on port `:53682` (Google's bundled OAuth client embeds this as the only allowed callback). If a flow is already in flight you'll get a 409.
+</Callout>
+
+### List remotes
+
+```
+GET /api/connectors/gdrive/remotes
+→ runs `rclone listremotes`, filtered to type = drive
+{
+  "remotes": [
+    { "name": "personal", "type": "drive" },
+    { "name": "work",     "type": "drive" }
+  ]
+}
+```
+
+### Add a remote (start OAuth)
+
+```
+POST /api/connectors/gdrive/remotes
+body: { "name": "personal", "force": false }
+→ 202 Accepted
+{ "session_id": "gdrive-...", "status": "pending" }
+```
+
+`force: true` re-auths an existing remote in place.
+
+### Poll session status
+
+```
+GET /api/connectors/gdrive/sessions/{session_id}
+{
+  "status":             "pending" | "awaiting_oauth" | "completed" | "error",
+  "auth_url":           "https://accounts.google.com/o/oauth2/auth?...",
+  "needs_manual_code":  true,
+  "remote_name":        "personal",
+  "error":              null
+}
+```
+
+### Submit the redirect URL
+
+After the user opens `auth_url` in their browser and approves, they'll be redirected to a `localhost:53682/?code=...` URL. They paste that whole URL (or just the `code=` part) back to the frontend, which submits:
+
+```
+POST /api/connectors/gdrive/sessions/{session_id}/submit
+body: { "code": "http://localhost:53682/?code=..." }
+→ {"ok": true}
+```
+
+The cowork-api extracts the code via regex, forwards it to rclone, and writes the new `[name]` section into `rclone.conf`.
+
+### Cancel
+
+```
+POST /api/connectors/gdrive/sessions/{session_id}/cancel
+→ {"ok": true}
+```
+
+Aborts the flow and kills the spawned rclone subprocess.
+
+### Delete a remote
+
+```
+DELETE /api/connectors/gdrive/remotes/{name}
+→ 204 No Content
+```
+
+Runs `rclone config delete {name}`.
+
+### Errors
+
+| Code | Cause |
+|---|---|
+| 400 | Invalid remote name (rejected by `validate_remote_name`) |
+| 404 | Session id unknown or expired (TTL = 600s) |
+| 409 | Concurrent OAuth flow already running |
+| 503 | rclone binary missing or unreachable |
+
+### End-to-end frontend flow
+
+<Steps>
+  <Step>
+    ### Start the flow
+
+    ```typescript
+    const { session_id, status } = await api(
+      "/api/connectors/gdrive/remotes",
+      { method: "POST", body: JSON.stringify({ name: "personal" }) },
+    );
+    ```
+  </Step>
+
+  <Step>
+    ### Show the auth URL
+
+    Poll until `status === "awaiting_oauth"`, then open `auth_url` in a browser tab.
+
+    ```typescript
+    let session;
+    do {
+      await sleep(1000);
+      session = await api(`/api/connectors/gdrive/sessions/${session_id}`);
+    } while (session.status === "pending");
+
+    if (session.status === "awaiting_oauth") {
+      window.open(session.auth_url, "_blank");
+    }
+    ```
+  </Step>
+
+  <Step>
+    ### Capture the redirect
+
+    The user copies the redirect URL (`http://localhost:53682/?code=...`) and pastes it back into your UI. Submit it:
+
+    ```typescript
+    await api(`/api/connectors/gdrive/sessions/${session_id}/submit`,
+      { method: "POST", body: JSON.stringify({ code: pastedUrl }) });
+    ```
+  </Step>
+
+  <Step>
+    ### Confirm completion
+
+    Poll once more; `status === "completed"` means rclone has the token. The remote is now listable from `GET /api/connectors/gdrive/remotes`.
+  </Step>
+</Steps>
+
+## 2. OneDrive
+
+Same shape as gdrive. Replace `gdrive` with `onedrive` in every path. Both share `rclone.conf` and the same `:53682` lock.
+
+## 3. GitHub
+
+Two paths:
+
+- **Manual PAT**: paste a Personal Access Token. Validated by hitting `GET /user`.
+- **Device flow** (`/cli/*`): runs `gh auth login --hostname github.com` under the hood, polls until the user enters the code at `https://github.com/login/device`.
+
+### Manual PAT
+
+```
+POST /api/connectors/github/token
+body: { "token": "ghp_..." }
+→ { "ok": true, "user": { "login": "...", "id": ... } }
+```
+
+Validates the token, stores it in `<repo>/mcp-tokens.json` under `github`.
+
+### Device flow
+
+```
+POST /api/connectors/github/cli/start
+→ {
+    "session_id":      "gh-cli-...",
+    "user_code":       "AB12-CD34",
+    "verification_uri": "https://github.com/login/device",
+    "expires_in":      900
+  }
+```
+
+Show the `user_code` and `verification_uri` to the user. They open the URL in a browser, paste the code, and approve.
+
+```
+POST /api/connectors/github/cli/poll
+body: { "session_id": "gh-cli-..." }
+→ { "status": "pending" | "approved" | "expired" }
+```
+
+On approval, the token is written to `~/.xo-cowork/github_token.json` and registered in `mcp-tokens.json`.
+
+```
+POST /api/connectors/github/cli/cancel
+body: { "session_id": "gh-cli-..." }
+→ { "ok": true }
+```
+
+### Status / disconnect / reconnect
+
+```
+GET  /api/connectors/github/status      → { connected: bool, user?: {...} }
+POST /api/connectors/github/disconnect  → clears stored token
+POST /api/connectors/github/reconnect   → re-validates an existing token
+```
+
+## 4. Vercel
+
+Three paths. Pick **OAuth** for production, **manual token** for self-managed setups, or rely on **Dynamic Client Registration** when the workspace is acting as an MCP-protected resource.
+
+### Manual token
+
+```
+POST /api/connectors/vercel/token
+body: { "token": "vercel_..." }
+```
+
+### OAuth (PKCE)
+
+```
+GET /api/connectors/vercel/oauth/start
+→ {
+    "authorize_url": "https://vercel.com/oauth/authorize?...",
+    "state":         "...",
+    "code_verifier_id": "..."
+  }
+
+// user completes in browser; vercel hits GET /callback?code=... on this server
+
+POST /api/connectors/vercel/oauth/exchange
+body: { "code": "...", "state": "..." }
+→ { "ok": true, "user": { ... } }
+```
+
+The OAuth callback at `GET /callback` is the public redirect URI. Set `VERCEL_OAUTH_REDIRECT_URI` to match the URL the workspace exposes.
+
+### Dynamic Client Registration
+
+The workspace can also act as an OAuth-protected resource for MCP clients:
+
+```
+GET /.well-known/oauth-protected-resource
+→ MCP DCR metadata document, including registration_endpoint and supported scopes
+```
+
+This lets remote clients (e.g., a hosted Claude that wants to talk to a workspace's tooling) register themselves without manual key exchange.
+
+### Status / disconnect / reconnect
+
+Same shape as GitHub.
+
+## 5. Manus
+
+The simplest connector. API key only.
+
+```
+POST /api/connectors/manus/token
+body: { "token": "manus_..." }
+→ { "ok": true }
+
+GET  /api/connectors/manus/status      → { connected: bool }
+POST /api/connectors/manus/disconnect  → clears
+POST /api/connectors/manus/reconnect   → re-validates
+```
+
+The token lands in `mcp-tokens.json` under `manus`.
+
+## 6. Where credentials live
+
+```
+<repo>/rclone.conf                     gdrive + onedrive remotes (rclone-managed)
+<repo>/mcp-tokens.json                 github / vercel / manus tokens
+~/.xo-cowork/github_token.json         gh CLI cached token (device-flow path)
+~/.openclaw/.env                       provider API keys (Anthropic, OpenAI, etc.)
+auth_state (in-memory)                 swarm Bearer token (Clerk poll-token flow)
+```
+
+<Callout type="warn">
+None of these stores are encrypted at rest. The workspace is the trust boundary; if you can reach the API, you can read every connected account's token.
+</Callout>
+
+## 7. Recommended frontend pattern
+
+For each connector card in the UI:
+
+1. On mount, `GET /api/connectors/{name}/status` to render the connected/disconnected badge.
+2. On click "Connect", run the connector-specific flow above.
+3. After completion, refresh status.
+4. "Disconnect" calls the disconnect endpoint and refreshes status.
+
+Connectors are independent; each can be flipped on or off without affecting the others.

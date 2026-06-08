@@ -1,0 +1,57 @@
+---
+title: N8N Workflows
+icon: N8n
+description: Launch your own n8n automation instance with one click.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { VideoEmbed } from '@/components/video-embed';
+
+N8N Workflows is a one-click deployment tool. Launch and run your own n8n instance instantly — no manual setup, configuration, or hosting required.
+
+<VideoEmbed id="090d0bb332bb4365802b4089c998fad2" title="N8N Workflows — Video Walkthrough" />
+
+<Steps>
+  <Step>
+    ### Access XO Launchpad
+
+    Go to [launchpad.xo.builders](https://launchpad.xo.builders) and sign in.
+  </Step>
+
+  <Step>
+    ### Open Templates
+
+    Navigate to **Templates** via the sidebar.
+  </Step>
+
+  <Step>
+    ### Launch N8N
+
+    Locate **N8N Workflows** and click **Launch Now**.
+  </Step>
+
+  <Step>
+    ### Configure Your Deployment
+
+    Enter a project name. Set volume persistence to **Persistent** if you want workflows and settings to survive restarts.
+
+    Click **Create Deployment**.
+  </Step>
+
+  <Step>
+    ### Wait for Deployment
+
+    Allow 5–10 minutes for the deployment to complete.
+  </Step>
+
+  <Step>
+    ### Open Your Instance
+
+    Click the dashboard link once ready, complete initial account registration, and start building automations.
+  </Step>
+</Steps>
+
+<Callout type="info">
+  Set volume persistence to **Persistent** to ensure your workflows and settings survive container restarts.
+</Callout>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML kind demo</title>
+  <style>
+    :root {
+      --bg: #08090A;
+      --ink: #f1f1f0;
+      --lime: #83d63a;
+      --card: #1c1c1e;
+      --muted: rgba(255, 255, 255, 0.6);
+      --divider: rgba(255, 255, 255, 0.08);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+    }
+    main { padding: 20px; }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+    .tagline {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0 0 24px;
+    }
+    section.card {
+      background: var(--card);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    section.card h2 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    section.card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--lime);
+    }
+    .live::before {
+      content: "";
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 0 4px rgba(131, 214, 58, 0.18);
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%      { transform: scale(0.85); opacity: 0.6; }
+    }
+    button {
+      margin-top: 8px;
+      background: var(--lime);
+      color: #08090A;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:active { transform: scale(0.98); }
+    #counter {
+      color: var(--lime);
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+    }
+    footer {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 11px;
+      text-align: center;
+      padding: 16px 12px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>HTML kind demo</h1>
+    <p class="tagline">Raw HTML rendered inside a sandboxed iframe.</p>
+
+    <section class="card">
+      <h2>What this is</h2>
+      <p>
+        This document lives at <code>content/html/index.html</code> and is
+        served as the body for the <strong>html</strong> XO app kind. The
+        outer phone OS shell renders the NavBar and gesture surface; this
+        iframe owns everything inside it.
+      </p>
+    </section>
+
+    <section class="card">
+      <h2>Inline scripts work</h2>
+      <p>
+        The default sandbox grants <code>allow-scripts</code>, so this
+        page can run its own JS. Tap below to see it work.
+      </p>
+      <p style="margin-top: 8px;">
+        Counter: <span id="counter">0</span>
+      </p>
+      <button onclick="document.getElementById('counter').textContent = (+document.getElementById('counter').textContent) + 1">
+        Tick
+      </button>
+    </section>
+
+    <section class="card">
+      <h2>Status</h2>
+      <p>
+        <span class="live">live in iframe</span>
+      </p>
+    </section>
+  </main>
+
+  <footer>content/html/index.html</footer>
+</body>
+</html>

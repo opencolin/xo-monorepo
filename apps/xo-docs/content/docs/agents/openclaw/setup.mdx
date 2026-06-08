@@ -1,0 +1,126 @@
+---
+title: Setup
+description: Deploy your OpenClaw AI agent on XO in under 10 minutes.
+icon: Rocket
+---
+
+import { VideoEmbed } from '@/components/video-embed';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+OpenClaw is an AI agent gateway you deploy on XO. Connect it to Telegram, give it your Anthropic API key, and your agent is live — no infrastructure to manage.
+
+## Setup Walkthrough
+
+<VideoEmbed id="f1b132df7f084b6084b794e2b3ce6a96" title="OpenClaw Setup on XO Builders" />
+
+## What You'll Need
+
+- An [XO account](https://beta.xo.builders)
+- **At least one model provider** — an Anthropic API key, an OpenAI API key, or both
+- **At least one channel** — a Telegram bot token (from [@BotFather](https://t.me/botfather)), a WhatsApp QR scan, or a Slack app token + bot token
+
+Any combination of providers and channels works.
+
+## Deploy OpenClaw
+
+<Steps>
+  <Step>
+    ### Create a New Project
+    Go to [beta.xo.builders](https://beta.xo.builders).
+
+    ![XO Builders dashboard](/images/openclaw-setup-01-dashboard.jpeg)
+
+    Click **New Project** in the left sidebar.
+
+    ![Click New Project](/images/openclaw-setup-02-new-project.jpeg)
+
+    Select **OpenClaw** and click **Create Agent**.
+
+    ![Select OpenClaw and click Create Agent](/images/openclaw-setup-03-create-agent.jpeg)
+  </Step>
+  <Step>
+    ### Configure Project Details
+    Fill in the project creation form:
+
+    | Field | Value |
+    |---|---|
+    | **Project Name** | A unique name — e.g. `xo-openclaw` (note this down, you'll need it later) |
+    | **Anthropic API Key** | Your Anthropic API key |
+    | **OpenAI API Key** | Your OpenAI API key |
+    | **Telegram Bot Token** | Your token from @BotFather |
+    | **WhatsApp** | Scan the QR code shown in the form |
+    | **Slack** | Your Slack app token and bot token |
+    | **Volume Size** | Default 2 GB is fine for most setups |
+
+    **At least one provider (Anthropic or OpenAI) and at least one channel (Telegram, WhatsApp, or Slack) are required.**
+
+    Click **Create Project**.
+
+    ![Click Create Project](/images/openclaw-setup-04-create-project.jpeg)
+  </Step>
+  <Step>
+    ### Wait for Startup
+    Your workspace takes about **5–6 minutes** to provision.
+
+    <Callout type="info">
+      The agent is ready when the **OpenClaw Gateway** status shows **Up** in the Workspace Details sidebar.
+    </Callout>
+  </Step>
+  <Step>
+    ### Verify Setup
+    Open the **Overview** tab and review the setup checklist. Confirm **Model connected** and save your Anthropic API key from the project page if it isn't already filled in.
+
+    ![Overview setup checklist](/images/openclaw-setup-05-overview-checklist.jpeg)
+
+    You can also adjust your agent's **Data** sources, **Channels**, and **Secrets** from the same top-nav. These are optional — the defaults from project creation will work.
+  </Step>
+  <Step>
+    ### Set Up a Project Directory
+    Open the **Projects** tab and create a new project directory for your agent's work — e.g. `marketing`.
+
+    ![Create a project directory](/images/openclaw-setup-06-project-dir.webp)
+  </Step>
+  <Step>
+    ### Connect Codex (Optional)
+    Prefer to use Codex via your ChatGPT subscription instead of an Anthropic API key? Open **Setup → Models** and click **Connect ChatGPT** to link your account via OAuth.
+
+    <Callout type="warn">
+      OAuth is only available **after provisioning is complete**. Wait for the workspace to finish starting up before clicking Connect ChatGPT.
+    </Callout>
+
+    See [Connect Codex](/setup/models/oauth/codex) for the full OAuth walkthrough.
+  </Step>
+  <Step>
+    ### Open the OpenClaw Gateway
+    Open the **Launch** tab and select **OpenClaw Gateway**. This opens the OpenClaw Dashboard in a new tab.
+
+    ![Click OpenClaw Gateway in the Launch tab](/images/openclaw-setup-07-gateway.jpeg)
+  </Step>
+  <Step>
+    ### Connect to the Gateway
+    In the **Gateway Token** field, enter the exact project name you used in Step 2 (e.g. `xo-openclaw`), then click **Connect**. The status indicator turns **green (OK)** when connected.
+
+    ![Enter Gateway Token and click Connect](/images/openclaw-setup-08-token-connect.webp)
+  </Step>
+  <Step>
+    ### Test Your Agent
+    Navigate to the **Chat** tab in the sidebar. Send a message — try `hello`.
+
+    ![Test your agent in chat](/images/openclaw-setup-09-chat.jpeg)
+
+    Your agent responds. OpenClaw is live.
+  </Step>
+</Steps>
+
+<Callout type="warn">
+  The Gateway Token must exactly match your project name from Step 2. A mismatch will prevent the dashboard from connecting.
+</Callout>
+
+## Troubleshooting
+
+Running into issues? Check the [Troubleshooting](/troubleshooting/agents/openclaw) page for common fixes.
+
+## Next Steps
+
+Your agent is live — now protect its state. Set up [Backup & Restore](/agents/openclaw/skills/backup-restore) to encrypt and version your agent folder with a single conversation.

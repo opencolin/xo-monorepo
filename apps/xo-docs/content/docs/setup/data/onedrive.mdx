@@ -1,0 +1,72 @@
+---
+title: OneDrive
+description: Connect Microsoft OneDrive so your agent can read your files.
+icon: OneDrive
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Connect a Microsoft account to your XO project so your agent can read files from OneDrive. Credentials live in your project's workspace, not on the XO platform.
+
+## What You'll Need
+
+- An XO project that has finished provisioning
+- A Microsoft account with access to the OneDrive files you want your agent to read
+
+## Connect OneDrive
+
+<Steps>
+  <Step>
+    ### Open Setup → Data
+    From your project page, open the **Setup** tab and select **Data**.
+
+    ![Setup → Data](/images/onedrive-01-data.jpeg)
+  </Step>
+  <Step>
+    ### Click Connect OneDrive
+    On the OneDrive row, click **Connect OneDrive**.
+
+    ![Click Connect OneDrive](/images/onedrive-02-connect.jpeg)
+  </Step>
+  <Step>
+    ### Name the Connection
+    Enter a name for the connection — e.g. `onedrive-cowork` — and click **Continue**. This is how the connection appears in your project.
+
+    ![Enter a name and click Continue](/images/onedrive-03-name.jpeg)
+  </Step>
+  <Step>
+    ### Accept Permissions
+    Sign in to your Microsoft account if prompted, then click **Accept** to grant OneDrive access.
+
+    ![Click Accept](/images/onedrive-04-accept.jpeg)
+  </Step>
+  <Step>
+    ### Paste the Verification Code
+    After granting permissions, Microsoft redirects to a `127.0.0.1/callback?...&code=...` URL. Your browser will show **"This site can't be reached"** — that's expected. The URL itself contains the auth code.
+
+    Copy the **full URL** from your browser's address bar.
+
+    ![Copy the callback URL from the address bar](/images/gdrive-08-copy-url.png)
+
+    Switch back to the XO tab and paste it into the **Verification code or URL** field.
+
+    ![Paste the verification code](/images/onedrive-05-paste.jpeg)
+
+    <Callout type="info">
+      Don't worry about the connection error — XO doesn't run a local callback server. The auth code lives in the URL, not on the page.
+    </Callout>
+
+    Click **Finish**.
+
+    ![Click Finish](/images/onedrive-06-finish.jpeg)
+  </Step>
+  <Step>
+    ### Connection Confirmed
+    OneDrive is now connected. Your remote shows as **ready** in the Data list.
+
+    ![OneDrive connected](/images/onedrive-07-connected.jpeg)
+  </Step>
+</Steps>
+
+Your OneDrive is now connected. Your agent can read from it on subsequent runs.

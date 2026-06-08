@@ -1,0 +1,83 @@
+---
+title: Vercel
+description: Connect Vercel so your agent can read deployments and project metadata.
+icon: Vercel
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Connect a Vercel account to your XO project so your agent can read deployments and project metadata. Vercel uses OAuth — same callback flow as Google Drive and OneDrive.
+
+## What You'll Need
+
+- An XO project that has finished provisioning
+- A Vercel account with access to the team and projects you want your agent to read
+
+## Connect Vercel
+
+<Steps>
+  <Step>
+    ### Open Setup → Data
+    From your project page, open the **Setup** tab and select **Data**.
+
+    ![Setup → Data](/images/vercel-01-data.jpeg)
+  </Step>
+  <Step>
+    ### Select an Authentication Method
+    On the Vercel row, pick how you want to authenticate:
+
+    - **OAuth** *(used in this guide)* — click **Open Vercel** and sign in via Vercel's web flow.
+    - **Access Token** — paste a token you create from your [Vercel account settings](https://vercel.com/account/tokens). Use this if you want scoped access or if your workspace blocks OAuth.
+
+    ![Select OAuth and click Open Vercel](/images/vercel-02-oauth.webp)
+
+    <Callout type="info">
+      The remaining steps follow the **OAuth** flow. If you picked Access Token, paste the token, click Finish, and you're done.
+    </Callout>
+  </Step>
+  <Step>
+    ### Sign In with Google
+    Click **Continue with Google** and pick the Google account tied to your Vercel login.
+
+    ![Click Continue with Google](/images/vercel-03-continue-google.jpeg)
+
+    ![Select your Google account](/images/vercel-04-select-google.jpeg)
+  </Step>
+  <Step>
+    ### Select Vercel Account or Team
+    Pick the Vercel account or team whose deployments you want your agent to read.
+
+    ![Select the Vercel account or team](/images/vercel-05-team.jpeg)
+  </Step>
+  <Step>
+    ### Allow Authorization
+    Review the requested scopes and click **Allow** to grant XO access.
+
+    ![Click Allow](/images/vercel-06-allow.jpeg)
+  </Step>
+  <Step>
+    ### Paste the Callback URL
+    After authorizing, Vercel redirects to a `127.0.0.1/callback?...&code=...` URL. Your browser will show **"This site can't be reached"** — that's expected. The URL itself contains the auth code.
+
+    Copy the **full URL** from your browser's address bar.
+
+    ![Copy the callback URL from the address bar](/images/gdrive-08-copy-url.png)
+
+    Switch back to the XO tab, click the **Callback URL** field, and paste with `Cmd + V` (or `Ctrl + V` on Windows/Linux).
+
+    ![Click the Callback URL field](/images/vercel-07-callback-field.jpeg)
+
+    ![Paste the callback URL](/images/vercel-08-paste.jpeg)
+
+    <Callout type="info">
+      Don't worry about the connection error — XO doesn't run a local callback server. The auth code lives in the URL, not on the page.
+    </Callout>
+
+    Click **Finish**.
+
+    ![Click Finish](/images/vercel-09-finish.jpeg)
+  </Step>
+</Steps>
+
+Your Vercel account is now connected. Your agent can read deployments and project metadata on subsequent runs.

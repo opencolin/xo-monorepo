@@ -1,0 +1,19 @@
+---
+title: Node.js
+icon: NodeJs
+description: Dockerfile for Node.js applications on XO Launchpad.
+---
+
+```dockerfile
+FROM node:20
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "start"]
+```
+
+Uses Node.js 20, installs dependencies via npm, and starts the app with `npm start` on port `3000`.
+
+Make sure your `package.json` has a `start` script, and update the port to match your app's configuration.

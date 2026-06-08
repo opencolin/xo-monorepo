@@ -1,0 +1,64 @@
+---
+title: Unit of work
+description: "When the work becomes the unit, its home moves from the prompt to the workspace."
+icon: Blocks
+---
+
+<Lead>When the work becomes the unit, a prompt is no longer enough. A unit of work needs a workspace.</Lead>
+
+A prompt is a single instruction. It has no memory of what came before, no files
+to work on, no tools to reach your systems, no budget, and no record once the
+reply scrolls away. A unit of work is different: it has to be owned from start to
+finish, executed, checked, and paid for. None of that fits in a prompt. It fits in
+a workspace, a place with a runtime to act, memory to carry context, files to
+produce, tools to reach out, and the budget and record that let you verify and
+settle. So as the work becomes the unit, its home moves from the prompt to the
+workspace.
+
+<SplitCompare
+	left={{
+		icon: "chat",
+		title: "A prompt",
+		items: ["One instruction", "No memory or state", "No tools or files", "Nothing to verify or bill"],
+	}}
+	right={{
+		icon: "cube",
+		title: "A workspace",
+		items: ["Owns the whole outcome", "Memory and files persist", "Tools to reach your systems", "Budget, state, and record built in"],
+	}}
+/>
+
+## What every unit of work needs
+
+<FeatureGrid
+	cols={3}
+	items={[
+		{ icon: "rocket", title: "Runtime", desc: "A place to actually act, not just answer." },
+		{ icon: "database", title: "Memory", desc: "Context that carries across the whole job." },
+		{ icon: "files", title: "Files", desc: "The artifacts the work produces and edits." },
+		{ icon: "tools", title: "Tools", desc: "Access to the systems where the work lives." },
+		{ icon: "budget", title: "Budget", desc: "A bound on what reaching the outcome is worth." },
+		{ icon: "eye", title: "Record", desc: "A trail to verify what was done and what it cost." },
+	]}
+/>
+
+## The life of a unit of work
+
+<Flow
+	steps={[
+		{ icon: "target", title: "Define", desc: "Name the outcome and the end state you want." },
+		{ icon: "budget", title: "Budget", desc: "Set what that outcome is worth." },
+		{ icon: "robot", title: "Execute", desc: "The agent works inside the workspace." },
+		{ icon: "eye", title: "Verify", desc: "Compare the state, before against after." },
+		{ icon: "scales", title: "Settle", desc: "Budget against the AI spend on your model." },
+	]}
+/>
+
+## In plain terms
+
+A unit of work is not a bigger prompt, it is a job with an owner. The reason it
+needs a workspace is that a job needs somewhere to live while it is being done:
+state to remember, files to touch, tools to use, and a ledger to prove it
+happened. The prompt is just the opening instruction. The workspace is where the
+work actually gets done, checked, and settled, which is why the workspace, not the
+prompt, is the real unit of an agentic workforce.

@@ -1,0 +1,96 @@
+---
+title: Deploying from Local
+icon: HardDrive
+description: Build and push a Docker image from your machine and deploy it to XO Launchpad.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { VideoEmbed } from '@/components/video-embed';
+
+This guide explains how to deploy an application using a Local Build. Instead of pulling from GitHub, you'll build and push a Docker image from your local machine.
+
+<VideoEmbed id="829c478574d84996ab0444499a7ccbdc" title="Deploying from Local — Video Walkthrough" />
+
+## Prerequisites
+
+- Docker installed on your local machine
+- A valid `Dockerfile` in your project repository
+- All required `ENV_VARS` configured in your application code
+
+<Steps>
+  <Step>
+    ### Select Local Build
+
+    From the sidebar, click **Create from blank**. Under **Deployment Type**, choose **Local Build**.
+  </Step>
+
+  <Step>
+    ### Configure Deployment Details
+
+    - **Project Name** — Unique name (lowercase letters, numbers, hyphens only). Example: `project-07`
+    - **Instance Size** — Select based on resource needs. Default is pre-selected.
+    - **Port Configuration** — Enter the port your app listens on (e.g. `3000`, `5173`, `8080`).
+
+    Click **Create Deployment** when done.
+  </Step>
+
+  <Step>
+    ### Get Your Deployment Information
+
+    Once created, you'll see:
+
+    - Deployment ID
+    - Access Token
+    - Docker Login Command
+    - Docker Build Command
+    - Docker Push Command
+  </Step>
+
+  <Step>
+    ### Build & Push Your Image
+
+    Run these commands in sequence from your terminal:
+
+    ```bash
+    # Login to XO Registry
+    docker login registry.xo.builders -u <username> -p <password>
+
+    # Build your image
+    docker build --platform linux/amd64 -t registry.xo.builders/<deployment-id>/<image-name> .
+
+    # Push to registry
+    docker push registry.xo.builders/<deployment-id>/<image-name>
+    ```
+  </Step>
+
+  <Step>
+    ### Deploy the Image
+
+    Go to **XO DevOps Dashboard → Your Deployments**. Open the **⋮ Actions menu** next to your deployment and click **Deploy**.
+
+    <Callout type="warn">
+      Pushing the image alone does not start your app. You must click **Deploy** after pushing, otherwise the new image won't be live.
+    </Callout>
+  </Step>
+
+  <Step>
+    ### Verify Logs
+
+    Click **Details → Logs** to monitor container startup. Check that the application binds to the correct port and runs without errors.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### Port Update Errors
+
+**Cause:** Port updates are only possible if a port was defined during initial deployment.
+
+**Fix:** Always provide an application port when creating the deployment (e.g. `3000`, `5173`, `8080`). If no port was set initially, delete the deployment and create a new one with the correct port.
+
+### 502 Gateway Error
+
+**Cause:** The application container may still be starting when you first open the URL.
+
+**Fix:** Wait at least **2 minutes** after clicking Deploy before accessing the URL. If the error persists, perform a hard reload (`Ctrl + Shift + R`) or open the URL in an incognito window.

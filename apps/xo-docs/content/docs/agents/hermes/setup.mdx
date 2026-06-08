@@ -1,0 +1,110 @@
+---
+title: Setup
+description: Create and configure a new Hermes project agent on XO.
+icon: Rocket
+---
+
+import { VideoEmbed } from '@/components/video-embed';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Set up a Hermes agent on XO: name your project, supply your model and channel credentials, and open the dashboard to monitor your agent.
+
+## Setup Walkthrough
+
+<VideoEmbed id="6d54e38381054f54bd1bf589a831ad38" title="Hermes Setup on XO Builders" />
+
+## What You'll Need
+
+- An [XO account](https://beta.xo.builders)
+- *(Preferred)* a **model provider** — an Anthropic API key, an OpenAI API key, or both
+- *(Preferred)* a **channel** — a Telegram bot token (from [@BotFather](https://t.me/botfather)), a WhatsApp QR scan, or a Slack app token + bot token
+
+Both are optional at project creation — you can add them later from the **Setup** menu — but configuring at least one of each up front is recommended.
+
+## Deploy Hermes
+
+<Steps>
+  <Step>
+    ### Create a New Project
+    Go to [beta.xo.builders](https://beta.xo.builders/).
+
+    ![XO Builders dashboard](/images/hermes-setup-01-dashboard.jpeg)
+
+    Click **New Project** in the left sidebar.
+
+    ![Click New Project](/images/hermes-setup-02-new-project.jpeg)
+
+    On the **Hermes Agent** template card, click **Create Agent**.
+
+    ![Click Create Agent on the Hermes Agent card](/images/hermes-setup-03-create-agent.jpeg)
+  </Step>
+  <Step>
+    ### Configure Project Details
+    Fill in the project creation form:
+
+    | Field | Value |
+    |---|---|
+    | **Project Name** | A unique name — e.g. `xo-hermes` (note this down, you'll need it for the dashboard URL) |
+    | **Anthropic API Key** | Your Anthropic API key |
+    | **OpenAI API Key** | Your OpenAI API key |
+    | **Telegram Bot Token** | Your token from @BotFather |
+    | **WhatsApp** | Scan the QR code shown in the form |
+    | **Slack** | Your Slack app token and bot token |
+    | **Volume Size** | Default 2 GB is fine for most setups |
+
+    All fields are optional — you can create the project without a provider or channel and add them later from the **Setup** menu. Configuring at least one of each up front is recommended.
+
+    Select **Anthropic** as the AI provider and paste your API key.
+
+    ![Select Anthropic and enter API key](/images/hermes-setup-05-anthropic.webp)
+
+    Add **Telegram** as a notification channel and paste your Bot Token.
+
+    ![Add Telegram and enter Bot Token](/images/hermes-setup-06-telegram.webp)
+
+    Click **Create Project**.
+
+    ![Click Create Project](/images/hermes-setup-07-create-project.jpeg)
+  </Step>
+  <Step>
+    ### Wait for Startup
+    Your workspace takes **5–6 minutes** to provision. The Hermes environment is being set up in the background.
+
+    <Callout type="info">
+      The agent is ready when **Hermes Dashboard** and **Gateway** appear in the Workspace Details sidebar.
+    </Callout>
+  </Step>
+  <Step>
+    ### Verify Setup
+    Open the **Setup** menu and select **Overview**.
+
+    ![Open Setup → Overview](/images/hermes-setup-08-overview.jpeg)
+
+    Confirm your **Anthropic** provider is connected and your API key is valid.
+
+    ![Connect Anthropic and verify API key](/images/hermes-setup-09-connect-anthropic.jpeg)
+
+    You can also adjust your agent's **Data** sources and **Channels** from the Setup menu. These are optional — the defaults from project creation will work.
+  </Step>
+  <Step>
+    ### Set Up a Project Directory
+    Open the **Work** menu and create a new project directory for your agent's work — e.g. `marketing`.
+
+    ![Open Work menu](/images/hermes-setup-10-work-menu.jpeg)
+
+    ![Create a project directory](/images/hermes-setup-11-project-dir.webp)
+  </Step>
+  <Step>
+    ### Open the Hermes Dashboard
+    Open the **Launch** tab and select **Hermes Dashboard**. The dashboard opens in a new tab.
+
+    ![Open the Launch tab](/images/hermes-setup-12-launch.jpeg)
+
+    Your agent is now live. Send it a message from your connected messaging app (Telegram, WhatsApp, or Slack), and monitor active conversations from the dashboard.
+  </Step>
+</Steps>
+
+<Callout type="info">
+  The Hermes Dashboard URL follows the pattern `hermes-dashboard--<project-name>--<workspace-user>.workspace.helloxo.nl`. The project name in the URL must match the name you set in Step 2.
+</Callout>

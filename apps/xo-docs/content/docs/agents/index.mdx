@@ -1,0 +1,36 @@
+---
+title: Agents
+description: Deploy and manage AI agents on XO Workspaces.
+icon: Bot
+---
+
+import { Cards, Card } from "@/components/card";
+
+XO Workspaces supports multiple agent types. Deploy a pre-built agent or bring your own.
+
+<Cards>
+	<Card
+		icon={<BrandIcon name="openclaw" size={20} />}
+		title="OpenClaw"
+		description="AI agent gateway with Telegram, WhatsApp, and Slack support."
+		href="/agents/openclaw"
+	/>
+	<Card
+		icon={<BrandIcon name="claude-code" size={20} />}
+		title="Claude Code"
+		description="Run Claude Code agents in XO Workspaces."
+		href="/agents/claude-code"
+	/>
+	<Card
+		icon={<BrandIcon name="hermes" size={20} />}
+		title="Hermes"
+		description="Messaging agent with Telegram support."
+		href="/agents/hermes"
+	/>
+	<Card
+		icon={<BrandIcon name="xo-cowork" size={20} />}
+		title="XO Cowork"
+		description="Chat-first AI workspace with per-project memory and multi-channel reach."
+		href="/agents/xo-cowork"
+	/>
+</Cards>

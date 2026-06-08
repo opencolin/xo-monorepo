@@ -1,0 +1,164 @@
+---
+title: XO Cowork API
+description: Build frontends and AI agents on top of the in-workspace control plane.
+icon: Network
+---
+
+import { Cards, Card } from "@/components/card";
+
+The XO Cowork API (`xo-cowork-api`) is the FastAPI control plane that runs **inside** every XO Coworker workspace. It brokers chat to agent runtimes (Claude Code, Codex, OpenClaw), owns the `~/xo-projects/` tree, manages secrets and sessions, and proxies connector OAuth flows.
+
+This section is a developer-facing integration guide. It documents the exact request and response shape of every endpoint a frontend (web, Tauri desktop, mobile, or AI client) needs to drive a Coworker workspace. Roughly 85 endpoints in total, grouped by purpose.
+
+<Cards>
+  <Card
+    icon={<span className="icon-[ph--info] size-4.5 text-green-400" />}
+    title="Overview"
+    description="Base URL, auth model, common patterns, error envelope."
+    href="/more/xo-cowork-api/overview"
+  />
+  <Card
+    icon={<span className="icon-[ph--shield-check] size-4.5 text-green-400" />}
+    title="Auth API"
+    description="Clerk poll-token sign-in, Claude CLI OAuth, Codex device-auth."
+    href="/more/xo-cowork-api/auth-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--chat-circle] size-4.5 text-green-400" />}
+    title="Chat API"
+    description="Prompt, SSE stream, abort. The two-call turn flow."
+    href="/more/xo-cowork-api/chat-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--folder] size-4.5 text-green-400" />}
+    title="Files API"
+    description="Upload, list, read, save, mkdir with project scaffolding."
+    href="/more/xo-cowork-api/files-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--list-bullets] size-4.5 text-green-400" />}
+    title="Sessions API"
+    description="List sessions, search, fetch messages, update working directory."
+    href="/more/xo-cowork-api/sessions-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--key] size-4.5 text-green-400" />}
+    title="Secrets API"
+    description="Read and write the active agent's `.env` file."
+    href="/more/xo-cowork-api/secrets-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--robot] size-4.5 text-green-400" />}
+    title="Agents API"
+    description="CRUD over the OpenClaw agent registry."
+    href="/more/xo-cowork-api/agents-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--gear] size-4.5 text-green-400" />}
+    title="Config API"
+    description="Workspace paths, models, providers, onboarding state."
+    href="/more/xo-cowork-api/config-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--plug] size-4.5 text-green-400" />}
+    title="Connectors API"
+    description="Drive, OneDrive, GitHub, Vercel, Manus OAuth flows."
+    href="/more/xo-cowork-api/connectors-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--chart-bar] size-4.5 text-green-400" />}
+    title="Usage API"
+    description="Unified token, cost, and tool telemetry across runtimes."
+    href="/more/xo-cowork-api/usage-api"
+  />
+  <Card
+    icon={<span className="icon-[ph--code] size-4.5 text-green-400" />}
+    title="Frontend Integration"
+    description="End-to-end TypeScript examples for building a chat UI."
+    href="/more/xo-cowork-api/frontend-integration"
+  />
+</Cards>
+
+## Where this fits
+
+```
+┌──────────────────────────┐    HTTP + SSE     ┌──────────────────────────┐
+│   Your frontend          │  (loopback by     │      xo-cowork-api       │
+│   (web, Tauri, mobile,   │   default)        │      FastAPI :5002       │
+│    AI agent)             │ ────────────────► │                          │
+│                          │                   │   /api/chat/*            │
+│                          │                   │   /api/sessions/*        │
+│                          │                   │   /api/files/*           │
+│                          │                   │   /api/secrets/*         │
+│                          │                   │   /api/agents/*          │
+│                          │                   │   /api/config/*          │
+│                          │                   │   /api/connectors/*      │
+│                          │                   │   /api/usage             │
+│                          │                   │   /xo-auth/*             │
+└──────────────────────────┘                   └────────────┬─────────────┘
+                                                            │
+                          ┌── routes by agent_name ─────────┴────────┐
+                          ▼                  ▼                       ▼
+                ┌──────────────────┐ ┌──────────────────┐  ┌──────────────────┐
+                │  Claude Code     │ │  Codex CLI       │  │  OpenClaw        │
+                │  subprocess      │ │  subprocess      │  │  HTTP gateway    │
+                └──────────────────┘ └──────────────────┘  └──────────────────┘
+                                                                     │
+                                                                     ▼ Bearer
+                                                          ┌──────────────────────┐
+                                                          │   xo-swarm-api       │
+                                                          │  /chat/add_message   │
+                                                          │  /usage/report       │
+                                                          │  /get-user-id        │
+                                                          └──────────────────────┘
+```
+
+`xo-cowork-api` is the only thing that knows which CLI to spawn or which OpenClaw URL to call. Frontends never speak to a runtime directly, and they never reach `xo-swarm-api` directly either.
+
+## At a glance
+
+| Family | Prefix | Purpose |
+|---|---|---|
+| Auth | `/xo-auth/*`, `/claude/*`, `/codex/*` | Clerk poll-token, Claude OAuth, Codex device-auth. |
+| Chat | `/api/chat/*` | Send a prompt, stream the response (SSE), abort. |
+| Sessions | `/api/sessions/*`, `/api/messages/{id}` | List, search, hydrate message history. |
+| Files | `/api/files/*` | Upload, read, write, list, mkdir + scaffold project trees. |
+| Secrets | `/api/secrets/*` | Read and write env vars for the active agent. |
+| Agents | `/api/agents/*` | CRUD over `~/.openclaw/openclaw.json`. |
+| Config | `/api/config/*`, `/api/models`, `/api/onboarding` | Workspace paths, models, providers. |
+| Connectors | `/api/connectors/{gdrive,onedrive,github,vercel,manus}/*` | OAuth flows for external systems. |
+| Usage | `/api/usage`, `/openclaw/usage/*` | Per-day token and cost telemetry. |
+| Server-direct | `/health`, `/gateway/restart`, `/app/restart`, `/app/update` | Diagnostics and lifecycle. |
+
+## On-disk state map
+
+```
+~/xo-projects/                       canonical projects root (XO_PROJECTS_ROOT)
+└── <project_id>/
+    ├── AGENTS.md, PROJECT.md, OBJECTIVES.md, PLAN.md, PROGRESS.md
+    ├── memory/{semantic,episodic,procedural,working}/
+    └── .xo/
+        ├── project.json
+        ├── sessions/sessionslist.json    metadata ONLY (no chat content)
+        ├── todos.json, stats.json, timeline.jsonl, ...
+
+~/.openclaw/                         OpenClaw runtime
+├── openclaw.json                    agent registry (managed by /api/agents)
+├── .env                             provider/channel secrets
+└── agents/<a>/sessions/
+    └── <session_id>.jsonl           message content lives here
+
+~/.claude/                           Claude Code runtime (read-only for cowork)
+└── projects/<encoded-path>/<sid>.jsonl
+
+~/.xo-cowork/                        machine-local UI state
+├── state.json                       onboarding flags
+└── github_token.json                gh CLI cached token
+
+<repo>/rclone.conf                   gdrive + onedrive remotes
+<repo>/mcp-tokens.json               github / vercel / manus tokens
+```
+
+The split is intentional and structural: chat content stays in runtime-native paths; the project folder is metadata-only and safe to share.
+
+Start with [Overview](/more/xo-cowork-api/overview) for transport, auth, and error conventions, then jump to the specific endpoint family you need.

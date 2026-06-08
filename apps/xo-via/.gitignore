@@ -1,0 +1,16 @@
+node_modules/
+.cache/
+public/
+dist/
+build/
+.next/
+.env*
+*.log
+.vscode/
+.idea/
+*.swp
+.DS_Store
+*.tsbuildinfo
+
+# watcher-owned, do not commit
+.xo/

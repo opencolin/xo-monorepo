@@ -1,0 +1,29 @@
+---
+title: Models
+description: Connect your agent's model provider via OAuth subscription or an API key.
+icon: Cpu
+---
+
+import { Cards, Card } from "@/components/card";
+
+The **Models** tab is where you connect a model provider to your XO project. Two paths:
+
+- **OAuth** — sign in with your Claude or ChatGPT subscription. Best if you already pay for one of those plans.
+- **API Key** — paste a key from Anthropic, OpenAI, or OpenRouter. Best for pay-as-you-go access or for providers without an OAuth flow.
+
+Credentials live in your project's workspace, not on the XO platform.
+
+<Cards>
+	<Card
+		icon={<span className="icon-[ph--plug-fill] size-4.5 text-green-400" />}
+		title="OAuth"
+		description="Authenticate with your Claude or ChatGPT subscription — no API key needed."
+		href="/setup/models/oauth"
+	/>
+	<Card
+		icon={<span className="icon-[ph--key-fill] size-4.5 text-green-400" />}
+		title="API Key"
+		description="Paste a key from OpenRouter, Anthropic, or OpenAI."
+		href="/setup/models/api-key"
+	/>
+</Cards>

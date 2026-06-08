@@ -1,0 +1,498 @@
+{
+  "name": "Rory Ridgers UGC ads",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Product",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Image",
+              "fieldType": "file",
+              "multipleFiles": false,
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Product name"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -1072,
+        96
+      ],
+      "id": "f53f4a91-c0c8-4055-b580-2b0c635ac138",
+      "name": "On form submission",
+      "webhookId": "ceb41d47-5ac4-457f-b0d6-d0bb45bea881"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "binaryPropertyName": "Image",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -864,
+        96
+      ],
+      "id": "cfd740d2-f65a-4ae8-923a-5c9df1219823",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        96
+      ],
+      "id": "f2fdee8d-8d5c-4f5e-8304-75d4c1e5aabe",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "text": "Role: You're an expert at generating UGC ads, and you must think like a producer.\n\nTask: You'll receive an image of a product that the user wants to turn into a UGC ad. Your job is to outline a description of the model for this image. The model should represent what the product is and should be a good persona to showcase the product. Please give a full, extremely detailed outline on exactly how the model should look, being extremely detailed.\n\nYou must give definitive answers. Don't say things like \"male\" or \"female.\" Pick the one that is most relevant, and if one isn't most relevant, then just flip a coin and pick one of them. Also, give exact ages, exact hair colours, etc. \n\nOUTPUT RULES (UNQUOTED JSON STRING CONTENT)\n- Output ONE line containing only the prompt text with JSON escaping.\n- Do NOT wrap the output in quotes.\n- Escape all double quotes as \\\", backslashes as \\\\, newline as \\n, tab as \\t, carriage return as \\r.\n- Do NOT include code fences, backticks, commentary, or trailing spaces.\n- ASCII only; no smart quotes.\n\nExample input → output:\nInput: He said, \"Go now!\" ↦ Output: He said, \\\"Go now!\\\"\n\n##Rules \nNever mention any brand names, celebrity names, or anything that could be copyrighted. \n",
+        "inputType": "base64",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -464,
+        96
+      ],
+      "id": "2383d07b-8cae-496a-9a95-3fce59b1d80f",
+      "name": "Model description"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Model: {{ $json.content }}",
+              "role": "system"
+            },
+            {
+              "content": "Roll, you're an expert at crafting UGC-style videos. You need to act as a producer for UGC-style videos. \n\nTask: You will be given a description for a model that is advertising a specific product. Your job is to build on the model prompt output a setting/scene for this product and model. You need to be extremely detailed and give definitive answers to everything. Don't say it could be nighttime or daytime; pick the one that is most relevant and be precise. Don't include the model details in your output; just provide a full, in-depth description of the setting. \n\n##Output\nDo not output in JSON, however output in a way that would be valid in a JSON body. So, not using any illegal characters. The only punctuation you should use is full stops and commas. Absolutely nothing else. \n\nNo colons or underscores. \n\n##Rules \nNever mention any brand names, celebrity names, or anything that could be copyrighted. "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -272,
+        96
+      ],
+      "id": "cf761c7e-bfbf-43a6-b237-4ba41da0f600",
+      "name": "Model + Setting prompt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googlePalmApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"role\": \"user\",\n      \"parts\": [\n        {\n          \"text\": \"Make a first scene for a ugc style add using the atataced product and this info. it should be a close up of the product. setting,{{ $('Model + Setting prompt').item.json.message.content }}. No logos, or trademarks. dont include any humans.\"\n        },\n        {\n          \"inline_data\": {\n            \"mime_type\": \"image/png\",\n            \"data\": \"{{ $('Extract from File').item.json.data }}\"\n          }\n        }\n      ]\n    }\n  ],\n  \"generationConfig\": {\n    \"responseModalities\": [\n      \"IMAGE\",\n      \"TEXT\"\n    ]\n  }\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1072,
+        304
+      ],
+      "id": "4b6ac2a9-b9e9-4531-89ac-168faa287d67",
+      "name": "First frame"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "candidates[0].content.parts[1].inlineData.data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        -864,
+        304
+      ],
+      "id": "1c8b4ef5-ac63-4d05-a23e-abe836b52b8a",
+      "name": "Convert to File1"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -192,
+        304
+      ],
+      "id": "b163a349-0b8e-4737-8592-af1850b1e854",
+      "name": "Wait1",
+      "webhookId": "a5c1540e-627f-44ff-978d-301147e95fd6"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.openai.com/v1/videos/{{ $json.id }}/content",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        304
+      ],
+      "id": "c3c8af4d-4990-4812-b3a0-c7ae81db8290",
+      "name": "HTTP Request3",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "name": "Sora test",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        256,
+        336
+      ],
+      "id": "8816e16b-4c15-44d3-a1fe-272405159df0",
+      "name": "Upload file1"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Model:{{ $('Model description').item.json.content }}\nSetting: {{ $('Model + Setting prompt').item.json.message.content }}\nProduct: {{ $('On form submission').item.json['Product name'] }}"
+            },
+            {
+              "content": "##Role\nYou are an expert at crafting UGC-style ads. I want you to think as a producer and expert social media marketer. \n\n##Task\nYou will be given a description of a model, a setting and a product. The first frame for the UGC-style video has already been generated. You will be generating the prompt for the AI video generator that will take your prompt as well as the first frame image to generate a full UGC-style video. \n\nYou will also generate a full script to go along with the video of the creator describing the product and complementing it. Ensure though that you don't add speech marks in the script. \n\nHere are some guidelines to always include in your output prompt:\n- It will always be natural and organic, as if someone is recording the video from their phone.\n- always mention UGC style.\n- It should be hyper-realistic.\n\n##OUTPUT RULES (JSON STRING SAFE, UNQUOTED)\n- Output your final text as a single line suitable for direct inclusion inside a JSON string.\n- Do NOT wrap it in quotes.\n- Escape all double quotes as \\\", all backslashes as \\\\, and all newlines as \\n.\n- Do not include code fences, markdown, or commentary.\n- Do not add trailing spaces or commas.\n- Keep only standard ASCII double quotes (no curly quotes).\n\n##Example output\nUGC style, hyper-realistic video continues from the first frame: The athletic 24-year-old male model... play smarter.\n\n##Rules \nNever mention any brand names, celebrity names, or anything that could be copyrighted. ",
+              "role": "system"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        96,
+        96
+      ],
+      "id": "a73aa06a-181b-465b-ae28-9cc4b654f15b",
+      "name": "Plan + Script"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/videos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer <api-key>"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "={{ $('Plan + Script').item.json.message.content.prompt }}.Never distort or strecth the video in anyway"
+            },
+            {
+              "name": "model",
+              "value": "sora-2"
+            },
+            {
+              "name": "size",
+              "value": "720x1280"
+            },
+            {
+              "name": "seconds",
+              "value": "8"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "input_reference",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -432,
+        304
+      ],
+      "id": "fa75cbf7-e373-4d10-bd47-5151a3e5806b",
+      "name": "Generate video"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nfunction makeSafe(s) {\n  return JSON.stringify(String(s.trim())).slice(1, -1);\n}\n\nfunction pickText(obj) {\n  const candidates = [\n    obj.text,\n    obj.prompt,\n    obj.response,\n    obj.output,\n    obj.content,\n    obj.data?.text,\n    obj.data?.output,\n    obj.choices?.[0]?.message?.content,\n    obj.candidates?.[0]?.content?.parts?.map(p => p.text).join(\"\\n\"),\n  ].filter(v => typeof v === 'string' && v.trim().length > 0);\n\n  return candidates[0] ?? JSON.stringify(obj);\n}\n\nreturn items.map(item => {\n  const raw = pickText(item.json);\n  const safe_prompt = makeSafe(raw);\n  return { json: { safe_prompt /*, _debug_keys: Object.keys(item.json) */ } };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        96
+      ],
+      "id": "041228e7-ed92-4c10-87ce-3891a76ee2aa",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "resize",
+        "width": 720,
+        "height": 1280,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.editImage",
+      "typeVersion": 1,
+      "position": [
+        -656,
+        304
+      ],
+      "id": "2f7bbbcf-aa55-4b28-a66a-3d4a2937ced7",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {
+        "content": "# Author: Rory Ridgers\n## [Youtube resource](https://youtu.be/_PFqoZeywKQ?si=CM7YJRDycCu-5z_a)",
+        "height": 192,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1072,
+        -128
+      ],
+      "typeVersion": 1,
+      "id": "1a9d51ea-7301-4e17-a67f-e528d23c9752",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Model description",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model description": {
+      "main": [
+        [
+          {
+            "node": "Model + Setting prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model + Setting prompt": {
+      "main": [
+        [
+          {
+            "node": "Plan + Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "First frame": {
+      "main": [
+        [
+          {
+            "node": "Convert to File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File1": {
+      "main": [
+        [
+          {
+            "node": "Edit Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Upload file1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan + Script": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate video": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "First frame",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "main": [
+        [
+          {
+            "node": "Generate video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "281177d86e39d60abfdc94933264e5f486cf295b92b411167365d1cf8d61b790"
+  }
+}

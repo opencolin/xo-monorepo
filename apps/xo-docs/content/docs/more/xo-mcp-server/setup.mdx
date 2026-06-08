@@ -1,0 +1,84 @@
+---
+title: Setup
+icon: Settings
+description: Install and configure the XO MCP Server.
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+## Installation
+
+<Tabs items={['Direct from GitHub (Recommended)', 'Local Development']}>
+  <Tab value="Direct from GitHub (Recommended)">
+    Add this configuration to your MCP client settings:
+
+    ```json
+    {
+      "mcpServers": {
+        "xo-mcp-server": {
+          "command": "uvx",
+          "args": [
+            "git+https://github.com/sharmasuraj0123/xo-mcp-server.git"
+          ],
+          "env": {
+            "ACCESS_TOKEN": "your_access_token",
+            "DEPLOYMENT_ID": "your_deployment_id"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+  <Tab value="Local Development">
+    Clone the repository:
+
+    ```bash
+    git clone https://github.com/sharmasuraj0123/xo-mcp-server.git
+    cd xo-mcp-server
+    ```
+
+    Add to your MCP client settings:
+
+    ```json
+    {
+      "mcpServers": {
+        "xo-mcp-server": {
+          "command": "uv",
+          "args": [
+            "--directory",
+            "/path/to/xo-mcp-server",
+            "run",
+            "-m",
+            "xo_mcp_server"
+          ],
+          "env": {
+            "ACCESS_TOKEN": "your_access_token",
+            "DEPLOYMENT_ID": "your_deployment_id"
+          }
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Description | Required |
+|---|---|---|
+| `ACCESS_TOKEN` | Your XO platform access token | Yes |
+| `DEPLOYMENT_ID` | Unique deployment identifier from XO Launchpad | Yes |
+
+### Getting Your Credentials
+
+1. Visit [XO Launchpad](https://launchpad.xo.builders)
+2. Sign in and create a new project
+3. Note down your **DEPLOYMENT\_ID**
+4. Contact the XO team for your **ACCESS\_TOKEN**
+
+<Callout type="error">
+  Never share your DEPLOYMENT_ID or ACCESS_TOKEN. Do not commit them to Git.
+</Callout>

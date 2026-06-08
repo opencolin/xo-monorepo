@@ -1,0 +1,536 @@
+{
+  "name": "1,000 LinkedIn Leads NO PAID API",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cc27b2d9-8de7-43ca-a741-2d150084f78e",
+              "name": "currentStartIndex",
+              "value": 1,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1760,
+        180
+      ],
+      "id": "7b8f1f6d-91c9-492f-95d0-79511c891cb6",
+      "name": "Set Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1smDBk1Eh50sRyTEzEhzWkDnaWaexZHiHTxYlp2M6_J0",
+          "mode": "list",
+          "cachedResultName": "linkedin",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1smDBk1Eh50sRyTEzEhzWkDnaWaexZHiHTxYlp2M6_J0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1smDBk1Eh50sRyTEzEhzWkDnaWaexZHiHTxYlp2M6_J0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Results ').item.json.name }}",
+            "about": "={{ $json.snippet }}",
+            "title": "={{ $json.title }}",
+            "profile_url": "={{ $json.link }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "profile_url",
+              "displayName": "profile_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "about",
+              "displayName": "about",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "outreach message 1",
+              "displayName": "outreach message 1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        3040,
+        100
+      ],
+      "id": "a1966a14-f2c9-47c9-b417-f6147c422d27",
+      "name": "Add to Google",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "c9jxWVXMHRXwFkGU",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "perplexity/sonar-pro",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        3300,
+        280
+      ],
+      "id": "f9b10349-0dac-414a-b30a-d7dcd72394cc",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "OTDNJIqy9ilCN58l",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1420,
+        180
+      ],
+      "id": "74168cce-996f-422f-9e6a-82858e854b56",
+      "name": "When clicking ‘Test workflow’"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Name: {{ $('Results ').all()[ $itemIndex ].json.name }}\nPosition: {{ $('Results ').all()[ $itemIndex ].json.position }}\nAbout: {{ $('Results ').all()[ $itemIndex ].json.about }}\n",
+        "options": {
+          "systemMessage": "Your job is to research this person as much as possible. The goal is to find information about them to eventually write a sales pitch to them. We need this information on them to create a personalized line. You are to find articles, linkedin posts, and whatever else that can be helpful in creating ice breaker lines for our outreach message to this individual. Do not include any intros or conclusions in your output. You must also include where you found the information from (linkedin post, article from (x), etc.)"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        3320,
+        100
+      ],
+      "id": "236b365f-d2fc-47c1-a276-e9c28a44904d",
+      "name": "Research Agent"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/customsearch/v1",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": ""
+            },
+            {
+              "name": "cx",
+              "value": "7565750b799fa4fe9"
+            },
+            {
+              "name": "q",
+              "value": "=CEO Accounting United States site:linkedin.com/in"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.startIndex || 1 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2260,
+        180
+      ],
+      "id": "fd8da80b-3edc-4556-b657-82f7e71db4e3",
+      "name": "Google Search"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the response data\nconst response = $input.first().json;\nconst items = response.items || [];\n\n// Track pagination info\nlet nextStartIndex = 1;\nif (response.queries && response.queries.nextPage && response.queries.nextPage[0]) {\n  nextStartIndex = response.queries.nextPage[0].startIndex;\n}\n\n// Calculate if we should continue (Google only allows up to 100 results)\nconst hasMoreResults = nextStartIndex <= 100;\n\n// Process the items and include pagination info in each item\nconst results = items.map(item => {\n  const titleParts = item.title.split(\" - \");\n  return {\n    name: titleParts[0] || null,\n    position: titleParts.slice(1).join(\" - \") || null,\n    link: item.link || null,\n    about: item.snippet || null,\n    image: item.pagemap?.cse_thumbnail?.[0]?.src || null,\n    // Add pagination info to each item\n    startIndex: nextStartIndex,\n    hasMoreResults: hasMoreResults\n  };\n});\n\n// If there are no results, return at least one item with pagination info\nif (results.length === 0) {\n  return [{ \n    json: {\n      name: null,\n      position: null,\n      link: null,\n      about: null,\n      image: null,\n      startIndex: nextStartIndex,\n      hasMoreResults: false\n    }\n  }];\n}\n\n// Return the processed results\nreturn results.map(r => ({ json: r }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2600,
+        180
+      ],
+      "id": "3298b14a-9e5e-4a1a-b07a-e86f11e92ca4",
+      "name": "Results "
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all input items\nconst inputItems = $input.all();\nconsole.log(\"Input items count:\", inputItems.length);\n\n// Extract pagination values with correct field names\nlet nextStartIndex = 1;\nlet hasMoreResults = false;\n\nif (inputItems && inputItems.length > 0) {\n  const firstItem = inputItems[0];\n\n  if (firstItem.json) {\n    console.log(\"First item JSON:\", JSON.stringify(firstItem.json));\n\n    // Look for \"startIndex\" instead of \"index\"\n    if (firstItem.json.startIndex !== undefined) {\n      nextStartIndex = firstItem.json.startIndex;\n      console.log(\"Found startIndex:\", nextStartIndex);\n    }\n\n    // Look for \"hasMoreResults\" instead of \"results\"\n    if (firstItem.json.hasMoreResults !== undefined) {\n      hasMoreResults = firstItem.json.hasMoreResults;\n      console.log(\"Found hasMoreResults:\", hasMoreResults);\n    }\n  }\n}\n\n// Return pagination control info\nreturn {\n  json: {\n    continueLoop: hasMoreResults,\n    startIndex: nextStartIndex\n  }\n};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3040,
+        300
+      ],
+      "id": "82dcc836-4956-46c6-8b05-67251a957206",
+      "name": "Pages"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "faef2862-80a4-465b-9e0b-be5b9753dcbd",
+              "leftValue": "={{ $('Pages').item.json.continueLoop }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2000,
+        300
+      ],
+      "id": "f2458929-60b3-47c4-a672-3eeefa274187",
+      "name": "Pages Check"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1smDBk1Eh50sRyTEzEhzWkDnaWaexZHiHTxYlp2M6_J0",
+          "mode": "list",
+          "cachedResultName": "linkedin",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1smDBk1Eh50sRyTEzEhzWkDnaWaexZHiHTxYlp2M6_J0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1smDBk1Eh50sRyTEzEhzWkDnaWaexZHiHTxYlp2M6_J0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('Results ').all()[ $itemIndex ].json.name }}",
+            "outreach message 1": "={{ $json.message.content }}"
+          },
+          "matchingColumns": [
+            "name"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "title",
+              "displayName": "title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "profile_url",
+              "displayName": "profile_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "about",
+              "displayName": "about",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "outreach message 1",
+              "displayName": "outreach message 1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        4380,
+        100
+      ],
+      "id": "295df565-a808-4835-8039-f3ab091566a1",
+      "name": "Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "c9jxWVXMHRXwFkGU",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "Your job is to create a personalized line / ice breaker for each profile. \n\n- It should come off as genuine and not corny. \n- Often it's great to ask a question but do not force it. \n- We do not just want to repeat what we see in their profile as that's generic and robotic. \n- Make it relatable if you can and try to pull from something similar that can relate even if you have to fabricate it (although it needs to be realistic). \n- You must not be too specific such as asking about locations or anything and try to focus it on business or achievements or posts as much as possible\n- Keep the ice breaker just one line and use business casual style format\n- Also do not include any introductions or conclusions in your output. You are to start with:\n\nHey, (name) (insert ice breaker based off of about). ",
+              "role": "system"
+            },
+            {
+              "content": "=Name: {{ $('Results ').all()[ $itemIndex ].json.name }}\nPosition: {{ $('Results ').all()[ $itemIndex ].json.position }}\nAbout: {{ $('Results ').all()[ $itemIndex ].json.about }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        3740,
+        100
+      ],
+      "id": "0b74cf06-f1a1-4ca5-a854-2e331a91d4ba",
+      "name": "Outreach Agent",
+      "credentials": {
+        "openAiApi": {
+          "id": "gXgJEgJjDzYaPnsd",
+          "name": "OpenAi account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Set Fields": {
+      "main": [
+        [
+          {
+            "node": "Google Search",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add to Google": {
+      "main": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Research Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Test workflow’": {
+      "main": [
+        [
+          {
+            "node": "Set Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Agent": {
+      "main": [
+        [
+          {
+            "node": "Outreach Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Search": {
+      "main": [
+        [
+          {
+            "node": "Results ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Results ": {
+      "main": [
+        [
+          {
+            "node": "Add to Google",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Pages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pages": {
+      "main": [
+        [
+          {
+            "node": "Pages Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pages Check": {
+      "main": [
+        [
+          {
+            "node": "Google Search",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Outreach Agent": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fe530412-e893-4bea-95fa-3bd859194eb4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "80868c6faaefe32f23363c3593878f9dc4b2470f6611e5a958f476842a987c73"
+  },
+  "id": "kkde2rkffXsLiklI",
+  "tags": [
+    {
+      "createdAt": "2024-12-12T18:31:41.043Z",
+      "updatedAt": "2024-12-12T18:31:41.043Z",
+      "id": "x184SB8C2U0gXtx6",
+      "name": "youtube"
+    }
+  ]
+}

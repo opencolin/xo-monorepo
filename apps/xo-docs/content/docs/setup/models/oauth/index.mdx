@@ -1,0 +1,24 @@
+---
+title: OAuth
+description: Authenticate XO agents with model providers via OAuth — use a subscription instead of an API key.
+icon: Plug2
+---
+
+import { Cards, Card } from "@/components/card";
+
+OAuth lets your XO agent authenticate with a model provider via your existing subscription — no API key required. Open **Setup → Models** in your project and click **Connect Claude** or **Connect ChatGPT**.
+
+<Cards>
+	<Card
+		icon={<BrandIcon name="claude-code" size={20} />}
+		title="Connect Claude"
+		description="Authorize agents with a Claude account (Pro / Team / Enterprise) via OAuth."
+		href="/setup/models/oauth/claude"
+	/>
+	<Card
+		icon={<BrandIcon name="codex" size={20} />}
+		title="Connect ChatGPT"
+		description="Authorize agents with an OpenAI ChatGPT subscription via OAuth (Codex)."
+		href="/setup/models/oauth/codex"
+	/>
+</Cards>

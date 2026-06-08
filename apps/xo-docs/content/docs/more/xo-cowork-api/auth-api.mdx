@@ -1,0 +1,225 @@
+---
+title: Auth API
+icon: UserPlus
+description: Sign in via Clerk, mint swarm tokens, and bootstrap Claude / Codex CLI auth.
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The auth surface covers three distinct flows that all converge into the same in-memory token store (`auth_state`):
+
+1. **Clerk poll-token flow** (`/xo-auth/*`): how the Cowork desktop signs the user in to `xo-swarm-api`.
+2. **Claude CLI OAuth** (`/claude/*`): bootstrapping the `claude` subprocess with a token.
+3. **Codex device-auth** (`/codex/*`): bootstrapping the `codex` subprocess and upserting it into `~/.openclaw/openclaw.json`.
+
+<Callout type="warn">
+Tokens are stored in-memory only (`auth_state` in `routers/auth.py`). There is no refresh loop. Restart the cowork-api process and you'll need to re-consume.
+</Callout>
+
+## 1. Clerk poll-token flow
+
+Triggered when no `XO_API_KEY` env var is set. The Tauri shell opens the browser, the user signs in to Clerk on swarm, and the cowork-api consumes the resulting one-time `poll_token` to mint a Bearer token for `xo-swarm-api`.
+
+### Endpoint summary
+
+| Verb | Path | Purpose |
+|---|---|---|
+| `POST` | `/xo-auth/start` | Begin the browser flow. Returns `authorize_url` and `auth_session_id`. |
+| `GET` | `/xo-auth/status/{auth_session_id}` | Poll auth state. No auth required. |
+| `POST` | `/xo-auth/consume` | Exchange a `poll_token` for an access token. Stashes it in `auth_state`. |
+| `GET` | `/xo-auth/whoami` | Forwards Bearer to swarm `/get-user-id`. |
+| `GET` | `/xo-auth/state` | Local `auth_state` inspection (debug). |
+| `POST` | `/xo-auth/logout` | Clear `auth_state`. |
+
+### The flow, end to end
+
+<Steps>
+  <Step>
+    ### Start the browser flow
+
+    ```
+    POST /xo-auth/start
+    →  forwards to swarm POST /auth/browser/start
+    ←  { authorize_url, auth_session_id, poll_token }
+    →  client receives { authorize_url, auth_session_id }
+    ```
+
+    The Tauri shell opens `authorize_url` in the system browser. The user signs in to Clerk on swarm.
+  </Step>
+
+  <Step>
+    ### Poll for completion
+
+    ```
+    GET /xo-auth/status/{auth_session_id}
+    →  swarm GET /auth/browser/status/{id}?poll_token=...
+    ←  { status: "pending" | "approved" | "expired" }
+    ```
+
+    Loop until `status` is `approved`.
+  </Step>
+
+  <Step>
+    ### Consume the poll token
+
+    ```
+    POST /xo-auth/consume
+    body: { auth_session_id, poll_token }
+    →  swarm POST /auth/browser/consume
+    ←  { access_token, refresh_token, expires_in, user_id }
+    →  stash in auth_state (in-memory)
+    →  client receives { ok: true, user_id }
+    ```
+  </Step>
+
+  <Step>
+    ### Verify
+
+    ```
+    GET /xo-auth/whoami
+    headers: (none from the client; cowork-api injects Bearer from auth_state)
+    →  swarm GET /get-user-id (Bearer)
+    ←  { user_id, email, ... }
+    ```
+  </Step>
+</Steps>
+
+### Auto-consume at startup
+
+If `XO_AUTH_SESSION_ID` and `XO_POLL_TOKEN` env vars are both set, the FastAPI lifespan hook runs `consume_auth_flow()` automatically before the first request lands. Useful for headless boot in CI or Coder workspaces.
+
+### Error envelope
+
+Standard `{ "detail": ... }` shape across the surface:
+
+| Code | When |
+|---|---|
+| 400 | Missing `auth_session_id` or `poll_token` on `/consume` |
+| 401 | Bearer is missing or invalid on `/whoami` |
+| 502 | Upstream `xo-swarm-api` returned an error |
+
+## 2. Claude CLI OAuth
+
+Bootstraps the `claude` CLI with a long-lived OAuth token. Once complete, `CLAUDE_CODE_OAUTH_TOKEN` is available to the subprocess broker for `/api/chat/*`.
+
+### Endpoint summary
+
+| Verb | Path | Purpose |
+|---|---|---|
+| `POST` | `/claude/setup-token` | Start the OAuth flow. Returns an authorize URL. |
+| `POST` | `/claude/setup-token/callback` | OAuth callback. Persists the token. |
+
+### Request
+
+```jsonc
+// POST /claude/setup-token
+{ }   // no body needed
+
+// response
+{
+  "authorize_url": "https://anthropic.com/oauth/...",
+  "session_id":    "claude-oauth-..."
+}
+```
+
+After the user completes the browser flow:
+
+```jsonc
+// POST /claude/setup-token/callback
+{
+  "session_id": "claude-oauth-...",
+  "code":       "<authorization_code>"
+}
+
+// response
+{ "ok": true }
+```
+
+The token is written into the `.env` file used by the active agent (typically `~/.openclaw/.env`) under `CLAUDE_CODE_OAUTH_TOKEN`. Use `upsert_env_entry()` (line-level edit) so comments and unrelated keys are preserved.
+
+## 3. Codex device-auth
+
+Bootstraps the `codex` CLI with a device-flow OAuth token, then upserts a Codex agent record into `~/.openclaw/openclaw.json` so the dispatcher knows about it.
+
+### Endpoint
+
+| Verb | Path | Purpose |
+|---|---|---|
+| `POST` | `/codex/setup` | Run the OpenAI device flow and persist the result. |
+
+### Behavior
+
+```
+1. Trigger codex device-auth: prints user_code + verification_url to stdout.
+2. Surface those to the frontend so the user can complete in browser.
+3. Poll for completion.
+4. On success:
+     a. Save OPENAI_API_KEY (or refresh token) into the active .env.
+     b. Upsert {id: "codex-default", name: "Codex", ...} into openclaw.json.
+5. Return { ok: true, agent_id: "codex-default" }.
+```
+
+After this completes, `agent_name: "claude_code"` style requests routed via `/api/chat/prompt` can also pick `agent_name: "codex"` once the manifest registers the route.
+
+## 4. Status / debug endpoints
+
+| Verb | Path | Returns |
+|---|---|---|
+| `GET` | `/api/codex/status` | `{ authenticated: boolean, expires_at?: string }` |
+| `GET` | `/api/channels/openclaw/status` | OpenClaw gateway reachability |
+| `GET` | `/api/mcp/status` | Stub: `{ status: "idle" }` |
+| `GET` | `/health` | `{ status: "ok" }` |
+| `GET` | `/debug/ai-auth` | Sanitized snapshot of the loaded provider creds |
+
+Use these on the onboarding screen to drive "needs setup" badges.
+
+## 5. Token storage paths
+
+```
+auth_state              in-memory dict in routers/auth.py
+~/.openclaw/.env        provider keys (CLAUDE_CODE_OAUTH_TOKEN, OPENAI_API_KEY, …)
+~/.xo-cowork/state.json onboarding flags
+~/.xo-cowork/github_token.json     gh CLI cached token
+<repo>/mcp-tokens.json  GitHub PAT / Vercel / Manus tokens
+```
+
+`auth_state` is the only store specific to the swarm Bearer; everything else is per-provider. There is no global "token vault."
+
+## 6. Frontend pattern
+
+```typescript
+// 1. Kick off Clerk sign-in
+const { authorize_url, auth_session_id } =
+  await api<{ authorize_url: string; auth_session_id: string }>(
+    "/xo-auth/start", { method: "POST" });
+
+window.open(authorize_url, "_blank");
+
+// 2. Poll until approved
+async function waitForApproval(): Promise<void> {
+  while (true) {
+    const s = await api<{ status: string }>(
+      `/xo-auth/status/${auth_session_id}`);
+    if (s.status === "approved") return;
+    if (s.status === "expired") throw new Error("Sign-in expired");
+    await new Promise(r => setTimeout(r, 2000));
+  }
+}
+await waitForApproval();
+
+// 3. Consume the poll token (you got this in step 1; keep it server-side
+//    for security: typically in the Tauri rust shell)
+const { user_id } = await api<{ ok: boolean; user_id: string }>(
+  "/xo-auth/consume",
+  { method: "POST",
+    body: JSON.stringify({ auth_session_id, poll_token }) },
+);
+
+// 4. Confirm
+const me = await api<{ user_id: string; email: string }>("/xo-auth/whoami");
+```
+
+<Callout type="info">
+The `poll_token` returned from `/xo-auth/start` is single-use. Hold it in the Tauri Rust shell rather than the renderer to keep it off the page's JS heap.
+</Callout>

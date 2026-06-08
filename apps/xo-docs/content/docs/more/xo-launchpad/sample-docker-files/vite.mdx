@@ -1,0 +1,28 @@
+---
+title: Vite
+icon: Vite
+description: Dockerfile for Vite applications on XO Launchpad.
+---
+
+```dockerfile
+FROM node:20
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source and build
+COPY . .
+RUN npm run build
+
+# Expose Vite preview server port
+EXPOSE 4173
+
+# Run the preview server with --host so it's accessible outside the container
+CMD ["npm", "run", "preview", "--", "--host"]
+```
+
+Uses Node.js 20, builds the Vite app, and runs the preview server with `--host` to make it accessible outside the container on port `4173`.
+
+Set your XO Launchpad port to `4173` when creating the deployment.

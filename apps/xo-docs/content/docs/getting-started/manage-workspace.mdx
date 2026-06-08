@@ -1,0 +1,127 @@
+---
+title: Manage Your Machine
+description: Manage your workspace — open your IDE, monitor resources, restart services, and control your machine.
+icon: Manage
+---
+
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Callout } from "fumadocs-ui/components/callout";
+
+Your project's workspace dashboard is the control center for your machine. From here you can open your IDE, restart the OpenClaw gateway, stop/start your machine, and monitor resource usage — all from the **Launch** tab.
+
+## What You'll Need
+
+- An [XO account](/getting-started/create-account) with an active workspace
+
+## Open Your Workspace
+
+Open [beta.xo.builders](https://beta.xo.builders).
+
+![XO Builders dashboard](/images/cfg-01-dashboard.jpeg)
+
+Select your agent from the sidebar.
+
+![Select your agent](/images/cfg-02-select-agent.jpeg)
+
+If your machine is stopped, click **Start** to boot it up.
+
+![Click Start](/images/cfg-03-click-start.jpeg)
+
+Wait for the agent status to transition to **Ready**.
+
+Once the machine is running, the panel shows all your workspace controls and live stats.
+
+## Monitoring Resources
+
+The panel displays real-time CPU and RAM usage for your workspace.
+
+![CPU and RAM Usage](/images/cfg-04-ready.webp)
+
+## Service Status
+
+The panel shows the status of your services. When everything is ready, you'll see **Up** next to each service.
+
+**OpenClaw Gateway** — The gateway is running and ready to accept connections.
+
+**Cowork API** — The workspace backend is running.
+
+![Services Up](/images/cfg-05-services-up.webp)
+
+<Callout type="warn">
+	Wait for both services to show **Up** before opening the gateway or IDE. New
+	projects take **10–15 minutes** to provision.
+</Callout>
+
+## Opening Your IDE
+
+The **Agent Connections** panel lists all the ways you can connect to your workspace.
+
+**Desktop IDE (VS Code / Cursor)** — Click **VS Code** to open the workspace in your desktop editor.
+
+![Click VS Code](/images/cfg-06-vscode.jpeg)
+
+**Browser IDE (Code-Server)** — Click **code-server** to open a browser-based VS Code. No install needed.
+
+![Click code-server](/images/cfg-07-codeserver.jpeg)
+
+For detailed IDE setup, see the [VS Code Server guide](/getting-started/vs-code-server).
+
+## Opening the OpenClaw Gateway
+
+Click **OpenClaw Gateway** to open the dashboard.
+
+![Click OpenClaw Gateway](/images/cfg-08-openclaw-gateway.jpeg)
+
+Enter your project name in the **Gateway Token** field.
+
+![Gateway Token field](/images/cfg-gateway-token.jpeg)
+
+If you see "unauthorized: gateway token missing", enter the correct token — it's your exact project name (case-sensitive).
+
+![Gateway unauthorized error](/images/cfg-gateway-unauthorized.jpeg)
+
+## Restarting the OpenClaw Gateway
+
+Click **OpenClaw Restart** to restart the gateway service.
+
+![Click OpenClaw Restart](/images/cfg-09-restart-click.jpeg)
+
+Wait for the **OpenClaw gateway restarted** confirmation.
+
+![Gateway restart confirmed](/images/cfg-10-restart-confirmed.jpeg)
+
+Give it a minute before opening the gateway again. For the terminal restart method (with logs), see the [Restart Gateway guide](/agents/openclaw/restart-gateway).
+
+## Restart Your Machine
+
+If your IDE isn't loading or your environment feels stuck, do a stop-and-restart cycle.
+
+<Steps>
+  <Step>
+    ### Stop the Machine
+
+    Click **Stop** to shut down the workspace machine. Click **Refresh** to confirm the status reads **stopped**.
+
+  </Step>
+  <Step>
+    ### Start the Machine
+
+    Click **Start** to boot the machine back up.
+
+    ![Click Start](/images/cfg-03-click-start.jpeg)
+
+    Wait for the status to change from **starting** to **running**.
+
+  </Step>
+  <Step>
+    ### Verify Services Are Up
+
+    Check that both **OpenClaw Gateway** and **Cowork API** show **Up** before opening the gateway or IDE.
+
+  </Step>
+</Steps>
+
+<Callout type="info">
+	If the machine stays in a **starting** state for more than a couple of
+	minutes, try stopping and starting it again.
+</Callout>

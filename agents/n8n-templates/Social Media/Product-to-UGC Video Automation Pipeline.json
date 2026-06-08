@@ -1,0 +1,1746 @@
+{
+  "name":"Product-to-UGC Video Automation Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "amount": 25
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        608,
+        528
+      ],
+      "id": "67fc7e5c-c987-4e5f-9a5a-f745fbed903f",
+      "name": "25",
+      "webhookId": "46e7411e-fe26-42b7-8a1d-2820e7787861"
+    },
+    {
+      "parameters": {
+        "content": "# API Keys & ID Needed\n\nWhat you need:\n\n### Airtable API: \n[]\n### Webhook Setup: \n[]\n### Telegram Bot Token: \n[]\n### Telegram Chat ID: \n[]\n### Google Gemini API: \n[]\n### Open Router AI API: \n[]\n### Kie AI API: \n[]\n### Fal AI API: \n[]\n\n",
+        "height": 672,
+        "width": 352,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -912,
+        32
+      ],
+      "typeVersion": 1,
+      "id": "a764eb07-318f-4102-a9d2-09d4b1313e35",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "path": "d564b044-4821-48db-8ec7-04d3629a6854",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        80
+      ],
+      "id": "56bff076-4f77-45d2-a611-93f87781ffad",
+      "name": "Image Webhook",
+      "webhookId": "d564b044-4821-48db-8ec7-04d3629a6854"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "=app0MwyrZMxNfJMa5",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "=tblpDXFpf1GDlWveK",
+          "mode": "id"
+        },
+        "filterByFormula": "{Status} = \"To Process\"",
+        "returnAll": false,
+        "limit": 1,
+        "options": {
+          "downloadFields": [
+            "Image File"
+          ],
+          "fields": [
+            "Image Prompt",
+            "Status",
+            "Created time",
+            "Product Description",
+            "Image File",
+            "Product Name + Type"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        80
+      ],
+      "id": "496a776f-d3e5-4501-a75f-2fbde48bf81d",
+      "name": "Get Data"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "75d754f1-4fa7-4c2a-8a0d-b65350e94940",
+              "name": "Video URL",
+              "value": "={{ $json.video.url }}",
+              "type": "string"
+            },
+            {
+              "id": "a893b370-9f68-4d45-8687-f6771cee0020",
+              "name": "status",
+              "value": "Done",
+              "type": "string"
+            },
+            {
+              "id": "12cd3acd-d465-458a-ab6c-0e17305c2539",
+              "name": "Created Time",
+              "value": "={{ $('Get Data').item.json.createdTime }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        816,
+        960
+      ],
+      "id": "042cad34-b784-4bc3-8992-6347bee6011b",
+      "name": "Map details"
+    },
+    {
+      "parameters": {
+        "content": "## Video URL Here",
+        "height": 256,
+        "width": 160,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        944,
+        864
+      ],
+      "typeVersion": 1,
+      "id": "b5b822aa-3a7e-40c9-83cc-e336914f266a",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your task: Create video prompts as guided by your system guidelines.\n\nMake sure that the reference image is depicted as ACCURATELY as possible in the resulting images, especially all text.\n\nFor each of the scenes, make sure the dialogue runs continuously with smoother transitions that makes sense. And always have the character just talk about the product and its benefits based on what you understand about the brand, and then a product demo. So if it's a skincare item or a beauty-related product, talk about its benefits and test it out on yourself, apply it on the face and demonstrate the difference it makes; if it is a tech product, talk about it; and so on.\n\nIf the character will mention the brand name, only do so in the FIRST scene.\n\nCut to the part where the character tries out the product on themselves. Make sure the product is correctly used. The character demonstrates this on camera.\n\nThese are the user's instructions: \n{{ $json.fields['Image Prompt'] }}\n\nIf the number of videos is not stated, generate 3 scenes.\n\n\nCount of videos to create: inferred based on their message above. Each video will be 8 seconds long, so calculate how many videos you need to generate based on the user's desired total duration.\n\nDescription of the reference image/s. Just use this to understand who the product or character is, don't use it as basis for the dialogue: {{ $('Analyze image').item.json.candidates[0].content.parts[0].text }}\n\nThe user's preferred aspect ratio: 9:16\nThe user's preferred model: inferred based on their message above, default is veo3_fast if not given",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "SYSTEM PROMPT: UGC-Style Veo3/Veo3_fast Prompt Generator (Video-Only)\nYou are a UGC (User-Generated Content) AI agent.\n\nYour task: Take the reference image or the product in the reference image and place it into realistic, casual scenes as if captured by everyday content creators or influencers.\n\nAll outputs must feel natural, candid, and unpolished – avoiding professional or overly staged looks. This means:\n\nEveryday realism with authentic, relatable settings\n\nAmateur-quality iPhone photo/video style\n\nSlightly imperfect framing and lighting\n\nCandid poses and genuine expressions\n\nVisible imperfections (blemishes, messy hair, uneven skin)\n\nReal-world environments left as-is (clutter, busy backgrounds)\n\nWe need these videos to look natural and real. So in the prompts, have the Camera parameter always use keywords like these: unremarkable amateur iPhone photos, reddit image, snapchat video, Casual iPhone selfie, slightly uneven framing, Authentic share, slightly blurry, Amateur quality phone photo\n\nIf the dialogue is not provided by the user or you are explicitly asked to create it, generate a casual, conversational line under 150 characters, as if a person were speaking naturally to a friend while talking about the product. Avoid overly formal or sales-like language. The tone should feel authentic, spontaneous, and relatable, matching the UGC style. Use ... to indicate pauses, and avoid special characters like em dashes or hyphens.\n\nA – Ask:\nGenerate only video generation instructions for AI models (no image prompts). Infer aspect ratios from vertical/horizontal context; default to vertical if unspecified.\n\nScene count rule:\n\nRead the user's requested total video duration and the per-video length (in seconds).\n\nCalculate the required number of videos by dividing total duration by per-video length, rounding up to the nearest integer.\n\nOutput exactly that many scenes.\n\nNever output more or fewer scenes than requested.\n\nG – Guidance:\n\nAlways follow UGC-style casual realism principles listed above.\n\nEnsure diversity in gender, ethnicity, and hair color when applicable. Default to actors in 21 to 38 years old unless specified otherwise.\n\nUse provided scene list when available.\n\nDo not use double quotes in any part of the prompts.\n\nN – Notation:\n\nFinal output includes a model and aspect ratio, then provide a \"scenes\" array at the root level.\n\nThe scenes array must contain exactly scene_count objects, where scene_count is the user-calculated number."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -112,
+        1184
+      ],
+      "id": "879a6095-ab97-4968-9c22-770e2d0d61b3",
+      "name": "Video Prompts"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "output.scenes",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        128,
+        384
+      ],
+      "id": "11129a5b-ba0d-4799-87b8-be6f9c7b68ee",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"model\": \"veo3_fast\",\n  \"aspect_ratio\": \"9:16\",\n  \"scenes\": [\n    {\n      \"video_prompt\": \"dialogue: ...\\naction: ...\\ncamera: ...\\nemotion: ...\\nvoice_type: ...\\ncharacter: ...\\nsetting: ...\"\n    }\n  ]\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        1344
+      ],
+      "id": "94666866-f25f-4fa3-884b-bc734b46df9e",
+      "name": "Scenes"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        1440
+      ],
+      "id": "7b774198-bb6c-4d08-8128-dcfbd305d8b2",
+      "name": "AI Brain"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/veo/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [PASTE API KEY HERE]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "prompt",
+              "value": "={{ $json.Prompt }}"
+            },
+            {
+              "name": "model",
+              "value": "={{ $json.Model }}"
+            },
+            {
+              "name": "aspectRatio",
+              "value": "={{ $json['Aspect ratio'] }}"
+            },
+            {
+              "name": "imageUrls",
+              "value": "={{ $json['Image URL'] }}"
+            },
+            {
+              "name": "enableFallback",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 3000
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        512
+      ],
+      "id": "0006bc2a-cdd0-4382-95f6-55300e317257",
+      "name": "Create Videos",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/veo/record-info",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [PASTE API KEY HERE]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        768
+      ],
+      "id": "28d07634-eedf-469d-9b8f-2643be4ef15c",
+      "name": "Check Status",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "69569121-900e-4a3c-bb96-e0ae71b53632",
+                    "leftValue": "={{ $json.msg }}",
+                    "rightValue": "success",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "success"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.msg }}",
+                    "rightValue": "error",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8c88ac57-9e03-4887-be70-0dc504459d97"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "null"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2c8b1fdd-4a4f-4a89-9ed6-d64728c4e2b0",
+                    "leftValue": "={{ $json.msg }}",
+                    "rightValue": "Server exception",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Server down"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        288,
+        896
+      ],
+      "id": "5d8692dd-645d-4e0e-ac33-e5b7e62775d6",
+      "name": "status"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/veo/record-info",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [PASTE API KEY HERE]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        288,
+        1232
+      ],
+      "id": "c044029f-78c1-46a6-aa6e-661c13fd0d3b",
+      "name": "Get Video"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "data.response.resultUrls[0]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        496,
+        1232
+      ],
+      "id": "6b17cad3-0b75-4d36-b094-1fa684b28caa",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/ffmpeg-api/merge-videos",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Key [PASTE API KEY HERE]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"video_urls\": $json.resultUrls[0] } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        368
+      ],
+      "id": "1f3ab265-75e3-4680-852a-fb10ef7054a1",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/ffmpeg-api/requests/{{ $json.request_id }}/status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Key [PASTE API KEY HERE]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        656
+      ],
+      "id": "1e92331d-99e6-497d-93e1-5018d52680b8",
+      "name": "Fetch Status"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "cbf83016-fa9f-4e33-9e33-ee8522880309",
+                    "leftValue": "IN_QUEUE",
+                    "rightValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Done"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "IN_QUEUE",
+                    "rightValue": "={{ $json.status }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "93b04cbc-e2cc-43da-b79a-9cef40d9de7d"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "in queue"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        608,
+        816
+      ],
+      "id": "1a6aad2b-e1a1-4329-9ccf-ec41c84103a0",
+      "name": "Done?"
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/ffmpeg-api/requests/{{ $json.request_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Key [PASTE API KEY HERE]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        960
+      ],
+      "id": "60ccb69e-7359-4ce2-a586-c26308fab445",
+      "name": "Get results"
+    },
+    {
+      "parameters": {
+        "content": "## Generate Videos",
+        "height": 1104,
+        "width": 192,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        240,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "a242743b-ac4e-4f7e-a47a-33fe6a79b849",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        288,
+        1072
+      ],
+      "id": "0d665486-9aea-4012-a844-4cff577ecfe7",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "text": "Analyze the given image and determine if it primarily depicts a product or a character, or BOTH.\n\nIf the image is of a product, return the analysis in YAML format with the following fields:\n\nbrand_name: (Name of the brand shown in the image, if visible or inferable)\ncolor_scheme:\n\nhex: (Hex code of each prominent color used)\nname: (Descriptive name of the color)\nfont_style: (Describe the font family or style used: serif/sans-serif, bold/thin, etc.)\nvisual_description: (A full sentence or two summarizing what is seen in the image, ignoring the background)",
+        "inputType": "binary",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        640
+      ],
+      "id": "bd52a77a-9e1a-45d5-ad23-546bc80acad2",
+      "name": "Analyze image"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app0MwyrZMxNfJMa5",
+          "mode": "list",
+          "cachedResultName": "Photo | TikTok Shop Affiliate Ads Tracker",
+          "cachedResultUrl": "https://airtable.com/app0MwyrZMxNfJMa5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblpDXFpf1GDlWveK",
+          "mode": "list",
+          "cachedResultName": "Media Entries",
+          "cachedResultUrl": "https://airtable.com/app0MwyrZMxNfJMa5/tblpDXFpf1GDlWveK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Created time": "={{ $('Get Data').item.json['Created time'] }}",
+            "Product Name + Type": "={{ $('Get Data').item.json['Product Name + Type'] }}",
+            "Image Prompt": "={{ $('Image Details').item.json['Image Prompt'] }}",
+            "Product Description": "={{ $('Image Details').item.json['Product Description Prompt'] }}",
+            "Status": "Video Processing"
+          },
+          "matchingColumns": [
+            "Created time"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Product Name + Type",
+              "displayName": "Product Name + Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Create Video",
+              "displayName": "Create Video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Image File",
+              "displayName": "Image File",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Image Prompt",
+              "displayName": "Image Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Product Description",
+              "displayName": "Product Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Video URL",
+              "displayName": "Video URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "To Process",
+                  "value": "To Process"
+                },
+                {
+                  "name": "Video Processing",
+                  "value": "Video Processing"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created time",
+              "displayName": "Created time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -48,
+        976
+      ],
+      "id": "45c2e7f8-be57-43f0-ad83-7142bf5a8bc0",
+      "name": "Video Processing"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app0MwyrZMxNfJMa5",
+          "mode": "list",
+          "cachedResultName": "Photo | TikTok Shop Affiliate Ads Tracker",
+          "cachedResultUrl": "https://airtable.com/app0MwyrZMxNfJMa5"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblpDXFpf1GDlWveK",
+          "mode": "list",
+          "cachedResultName": "Media Entries",
+          "cachedResultUrl": "https://airtable.com/app0MwyrZMxNfJMa5/tblpDXFpf1GDlWveK"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Status": "Done",
+            "Created time": "={{ $json['Created Time'] }}",
+            "Video URL": "={{ $json['Video URL'] }}"
+          },
+          "matchingColumns": [
+            "Created time"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Product Name + Type",
+              "displayName": "Product Name + Type",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Create Video",
+              "displayName": "Create Video",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": true
+            },
+            {
+              "id": "Image File",
+              "displayName": "Image File",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Image Prompt",
+              "displayName": "Image Prompt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Product Description",
+              "displayName": "Product Description",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": true
+            },
+            {
+              "id": "Video URL",
+              "displayName": "Video URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Not Started",
+                  "value": "Not Started"
+                },
+                {
+                  "name": "To Process",
+                  "value": "To Process"
+                },
+                {
+                  "name": "Video Processing",
+                  "value": "Video Processing"
+                },
+                {
+                  "name": "Done",
+                  "value": "Done"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Created time",
+              "displayName": "Created time",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        976,
+        960
+      ],
+      "id": "99524361-698c-4880-b6f5-8b6da33106f0",
+      "name": "Done"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Your task: Create 1 image prompt as guided by your system guidelines.\n\nMake sure that the reference image is depicted as ACCURATELY as possible in the resulting images, especially all text.\n\nThese are the user's instructions: {{ $json.content.parts[0].text }}\n\nDescription of the reference image: {{ $('Analyze image').item.json.candidates[0].content.parts[0].text }}\n\nThe user's preferred aspect ratio: inferred based on their message above, default is vertical if not given",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Image Prompt Generator\nDefault: If the user's instructions are not very detailed, just default the prompt to: put this (product) into the scene with the (character).\n\nIf the user wants UGC authentic casual content: Use casual UGC-style scenes unless the user specifies otherwise, and follow the instructions below.\n\ntext\nIf the user explicitly requests a different style or setting, follow their instructions.\n\nYour task: Take the reference image or the product in the reference image and place it into realistic, casual scenes as if captured by everyday content creators or influencers.\n\nAll outputs must feel **natural, candid, and unpolished** — avoiding professional or overly staged looks. This means:\n\n- Everyday realism with authentic, relatable settings\n- Amateur-quality iPhone photo style\n- Slightly imperfect framing and lighting\n- Candid poses and genuine expressions\n- Visible imperfections (blemishes, messy hair, uneven skin, texture flaws)\n- Real-world environments left as-is (clutter, busy backgrounds)\n- Always preserve all visible product **text accurately** (logos, slogans, packaging claims). Never invent extra claims or numbers.\nCamera parameter must always include casual realism descriptors such as:\nunremarkable amateur iPhone photos, reddit image, snapchat photo, Casual iPhone selfie, slightly uneven framing, Authentic share, slightly blurry, Amateur quality phone photo\n\nDialogue/video generation is not required. Only image prompts are generated.\n\nAvoid mentioning the name of any copyrighted characters in the prompt\n\nA - Ask:\nGenerate image generation instructions only for AI models based on the user’s request, ensuring exact YAML format.\nDefault to vertical aspect ratio if unspecified.\nAlways include both:\n- image_prompt (stringified YAML with scene details)\n- aspect_ratio_image (“3:2” or “2:3”)\n\nG - Guidance:\n- Always follow UGC-style casual realism principles listed above.\n- Ensure diversity in gender, ethnicity, and hair color when applicable. Default to actors in 21 to 38 years old unless specified otherwise.\n- Default to casual real-world environments unless a setting is explicitly specified.\n- Avoid double quotes in the image prompts.\n\nE - Examples:\ngreen_dot good_examples:\n- |\n{\n\"scenes\": [\n{\"image_prompt\": \"action: character holds product naturally\\ncharacter: infer from the reference image\\nproduct: show product with all visible text clear and accurate\\nsetting: infer from the image or from user instruction\\ncamera: amateur iPhone photo, casual selfie, uneven framing, slightly blurry\\nstyle: candid UGC look, no filters, imperfections intact\\ntext_accuracy: preserve all visible text exactly as in reference image\"}\n],\n\"aspect_ratio_image\": \"2:3\"\n}\nred_dot bad_examples:\n- Altering or fabricating product packaging text\n\nN - Notation:\n- Final output is an object containing only:\n- image_prompt → stringified YAML\n- aspect_ratio_image → \"3:2\" or \"2:3\" (default vertical → 2:3)\n\nT - Tools:\n- Think Tool: Double-check output for completeness, text accuracy, adherence to UGC realism, and that only image outputs are returned."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -448,
+        928
+      ],
+      "id": "ed352a37-2220-494b-ae6b-219e94da6783",
+      "name": "Image Prompt"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"image_prompt\": \"emotion: ...\\naction: ...\\ncharacter: ...\\nproduct: ...\\nsetting: ...\\ncamera: ...\\nstyle: ...\\ncomposition: ...\\nlighting: ...\\ncolor_palette: ...\\ntypography: ...\\ntext_accuracy: ...\",\n  \"aspect_ratio_image\": \"2:3\"\n}",
+        "autoFix": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -448,
+        1088
+      ],
+      "id": "9f673f0e-4467-409c-8347-9f11b4224c91",
+      "name": "Output data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/gpt4o-image/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [PASTE API KEY HERE]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"filesUrl\": [ $json.URL ], \"prompt\": $json[\"Image Prompt\"], \"size\": $json[\"Aspect Ratio\"], \"callBackUrl\": \"https://your-callback-url.com/callback\", \"isEnhance\": false, \"uploadCn\": false, \"nVariants\": 1, \"enableFallback\": false, \"fallbackModel\": \"FLUX_MAX\" } }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -48,
+        384
+      ],
+      "id": "d6144014-d4d0-4cc4-b792-e86ec9a899cb",
+      "name": "Generate Image"
+    },
+    {
+      "parameters": {
+        "operation": "sendPhoto",
+        "chatId": "5071893265",
+        "binaryData": true,
+        "binaryPropertyName": "Image File_0",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        384
+      ],
+      "id": "939e7a38-ae75-42a2-9295-7e2cd7069d53",
+      "name": "Send photo",
+      "webhookId": "b98ed160-079b-4b9a-a2bc-0dc7c1a1bf5c"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.result.photo[1].file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        512
+      ],
+      "id": "c3994f10-2ebc-40f9-929d-bce50bb9c0c9",
+      "name": "Get a file",
+      "webhookId": "7ed9eff2-31e2-48e8-92d6-6e605ec814c6"
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        512
+      ],
+      "id": "a25b2577-0511-4e19-8eaa-cff2142d6fc3",
+      "name": "Wait",
+      "webhookId": "953b00d0-e25c-4eed-930a-306c6559e755"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/gpt4o-image/record-info",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [PASTE API KEY HERE]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -48,
+        640
+      ],
+      "id": "42e9304a-48ff-4fc9-b3f0-419b6a4b8df5",
+      "name": "Get Image"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "SUCCESS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "cb7f88b8-1667-43b9-8c31-793d3a755bf3"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "yes"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "81b05a37-e46c-4043-a82c-321cd0b9395c",
+                    "leftValue": "={{ $json.data.status }}",
+                    "rightValue": "GENERATING",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "no"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -48,
+        768
+      ],
+      "id": "124a0246-9cde-415f-a0c4-9a0e58e57a1b",
+      "name": "Success?"
+    },
+    {
+      "parameters": {
+        "content": "## Process the Product\n",
+        "height": 224,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        16
+      ],
+      "typeVersion": 1,
+      "id": "1df5ccc7-d651-447c-996d-dfb4dda70c3a",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## Get Product Image + Desc\n",
+        "height": 784,
+        "width": 192,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -432,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "fb55a83f-d325-4c83-b07c-07ab26cc4b12",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "## Generate Model Image + Video Prompts\n",
+        "height": 1104,
+        "width": 192,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -96,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "b6b87ce2-7210-42c5-82de-b9f629fa6b9c",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        288,
+        640
+      ],
+      "id": "9830bab0-d3c3-421b-b013-b3ad81c0ef58",
+      "name": "2 mins",
+      "webhookId": "c069fd24-52a2-4782-a83c-8d13090f8742"
+    },
+    {
+      "parameters": {
+        "content": "## Merge Videos + Get Results",
+        "height": 848,
+        "width": 192,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        560,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "346de5ba-99a6-4dc7-9749-0c3b576c37e4",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fac53a60-d680-4a19-984d-13ae096fafaa",
+              "name": "Prompt",
+              "value": "={{ $json['output.scenes'] }}",
+              "type": "string"
+            },
+            {
+              "id": "6e4d04fc-e2b1-4914-9e0f-09ea2724dba5",
+              "name": "Model",
+              "value": "={{ $json.output.model }}",
+              "type": "string"
+            },
+            {
+              "id": "70b74113-8769-4b9d-9f71-a61d686c0ab7",
+              "name": "Aspect ratio",
+              "value": "={{ $json.output.aspect_ratio }}",
+              "type": "string"
+            },
+            {
+              "id": "edee404b-192e-450f-b26d-40db3c60edf6",
+              "name": "Image URL",
+              "value": "={{ $('Get Image').item.json.data.response.resultUrls[0] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        288,
+        384
+      ],
+      "id": "ee505547-c004-493b-b91e-723d1605591c",
+      "name": "Video Details"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4e9ba06c-c4fe-420b-a86e-80b6065fb8fa",
+              "name": "URL",
+              "value": "=https://api.telegram.org/file/bot(your_bot_token)/{{ $('Get a file').item.json.result.file_path }}",
+              "type": "string"
+            },
+            {
+              "id": "520c92ce-45d0-4968-8418-ca6009327d72",
+              "name": "Product Description Prompt",
+              "value": "={{ $('Analyze image').item.json.candidates[0].content.parts[0].text }}",
+              "type": "string"
+            },
+            {
+              "id": "62f8d6df-ffc7-4b19-9b31-2549d3cc740d",
+              "name": "Image Prompt",
+              "value": "={{ $json.output.image_prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "4e3d38ba-cc2b-4f27-954a-2bb0a8520a85",
+              "name": "Aspect Ratio",
+              "value": "={{ $json.output.aspect_ratio_image }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -208,
+        384
+      ],
+      "id": "24944ec1-f62a-46b4-8140-6b12ff3faa9c",
+      "name": "Image Details"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.candidates[0].content.parts[0].text }}"
+            }
+          ]
+        },
+        "options": {
+          "systemMessage": "Based on the product description from prompt, Please describe a character (avoid naming them), with a complete profile on how they look, including gender, how they dress and behave, giving us a step by step process on how the product is used or applied on. Don't refer to other steps prior to using the product and after. Just focus on the process of directly using the product and not patch testing it."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -432,
+        800
+      ],
+      "id": "1cadd40c-8d25-4155-8ae9-9a85eecbf6cc",
+      "name": "Demo prompt"
+    },
+    {
+      "parameters": {
+        "content": "# Setup Flow\n\n## Setup Airtable\n- Base, Table, Records\n- Columns and Product Details + Image\n- Webhook URL\n- API Access Token\n- Copy this [table](https://airtable.com/app4TinvJJRwoiPdk/shrHzgikIglCAz6zy)\n\n## Set up Telegram\n- Copy & Paste Bot Token in Credentials \n- Get your Chat ID\n\n## Setup Get Data node Credentials\n\n## Setup Google Gemini Credentials\n- Copy & Paste API Key\n\n## Setup Kie API\n- Copy & Paste API Key\n\n## Setup Fal API\n- Copy & Paste API Key",
+        "height": 736,
+        "width": 352,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1312,
+        32
+      ],
+      "typeVersion": 1,
+      "id": "03d66b6a-0f40-4fb8-bb3e-a948c4ff2faf",
+      "name": "Sticky Note"
+    }
+  ],
+  "connections": {
+    "25": {
+      "main": [
+        [
+          {
+            "node": "Fetch Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Data": {
+      "main": [
+        [
+          {
+            "node": "Send photo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map details": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompts": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Video Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Scenes": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Video Prompts",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Brain": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Video Prompts",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Scenes",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Image Prompt",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Output data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Videos": {
+      "main": [
+        [
+          {
+            "node": "2 mins",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "status": {
+      "main": [
+        [
+          {
+            "node": "Get Video",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "25",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Status": {
+      "main": [
+        [
+          {
+            "node": "Done?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Done?": {
+      "main": [
+        [
+          {
+            "node": "Get results",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "25",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get results": {
+      "main": [
+        [
+          {
+            "node": "Map details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Demo prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Processing": {
+      "main": [
+        [
+          {
+            "node": "Video Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Prompt": {
+      "main": [
+        [
+          {
+            "node": "Image Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Output data": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Image Prompt",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Image": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send photo": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Image": {
+      "main": [
+        [
+          {
+            "node": "Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success?": {
+      "main": [
+        [
+          {
+            "node": "Video Processing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2 mins": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Details": {
+      "main": [
+        [
+          {
+            "node": "Create Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image Details": {
+      "main": [
+        [
+          {
+            "node": "Generate Image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Demo prompt": {
+      "main": [
+        [
+          {
+            "node": "Image Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "281177d86e39d60abfdc94933264e5f486cf295b92b411167365d1cf8d61b790"
+  }
+}

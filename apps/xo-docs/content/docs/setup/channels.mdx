@@ -1,0 +1,78 @@
+---
+title: Channels
+description: Bring your agent to Telegram or Slack — the messaging apps your team already uses.
+icon: Network
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Channels connect your agent to messaging apps so your team can interact with it from the tools they already use. XO supports **Telegram** and **Slack** today.
+
+The flow is the same for both — open **Setup → Channels**, add the channel, paste your token(s), save, and restart the **OpenClaw Gateway**.
+
+## What You'll Need
+
+- An XO project that has finished provisioning
+- **For Telegram:** a bot token from [@BotFather](https://t.me/botfather)
+- **For Slack:** a Slack app with a Bot User OAuth Token (`xoxb-...`) and an App-Level Token (`xapp-...`). See the [Slack app deep-dive](/agents/openclaw/channels/connect-slack) for creating the app and finding the tokens.
+
+## Connect a Channel
+
+<Steps>
+  <Step>
+    ### Open Setup → Channels
+    From your project page, open the **Setup** tab and select **Channels**.
+
+    ![Open Setup → Channels](/images/slack-01-channels.jpeg)
+  </Step>
+  <Step>
+    ### Add Your Channel
+    Click **Add Telegram** or **Add Slack** depending on which channel you want.
+
+    ![Add Slack](/images/slack-02-add.jpeg)
+  </Step>
+  <Step>
+    ### Paste Your Token(s)
+    Paste the credentials for the channel you picked:
+
+    - **Telegram:** one **bot token** from [@BotFather](https://t.me/botfather).
+    - **Slack:** two tokens — a **Bot User OAuth Token** (`xoxb-...`) and an **App-Level Token** (`xapp-...`).
+
+    ![Paste the bot token](/images/slack-03-bot-token.jpeg)
+
+    ![Paste the app token](/images/slack-04-app-token.jpeg)
+  </Step>
+  <Step>
+    ### Save Changes
+    Click **Save changes** to apply.
+
+    ![Click Save changes](/images/slack-05-save.jpeg)
+  </Step>
+  <Step>
+    ### Restart the OpenClaw Gateway
+    Channel changes only take effect after the Gateway restarts. Open the **Launch** tab.
+
+    ![Open the Launch tab](/images/slack-06-launch.jpeg)
+
+    Click **OpenClaw Restart**.
+
+    ![Click OpenClaw Restart](/images/slack-07-restart.jpeg)
+  </Step>
+  <Step>
+    ### Verify the Connection
+    Back on **Setup → Channels**, the **Notifications** widget shows how many channels are active. Right after saving (before the Gateway restart) you'll see **0/2**:
+
+    ![0/2 channels active — click Refresh](/images/slack-08-refresh.jpeg)
+
+    Click **Refresh** once the Gateway has restarted. The widget flips to **2/2 channels active** (or however many you've configured):
+
+    ![2/2 channels active](/images/slack-09-status.jpeg)
+
+    Send a test message to your agent on the channel you connected to confirm it responds.
+  </Step>
+</Steps>
+
+<Callout type="warn">
+  If your agent isn't responding on a newly-connected channel, double-check that the Gateway has actually restarted from the **Launch** tab.
+</Callout>

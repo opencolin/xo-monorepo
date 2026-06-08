@@ -1,0 +1,216 @@
+---
+title: Usage API
+icon: Monitor
+description: Unified token, cost, and tool telemetry across runtimes.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The usage surface returns aggregated, per-day metrics that the desktop dashboard renders. It reads native runtime JSONL on the fly (Claude Code under `~/.claude/projects/...` and OpenClaw under `~/.openclaw/agents/...`) and merges them into a single shape.
+
+## Endpoint summary
+
+| Verb | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/usage?days=30` | Unified usage across every runtime. **Use this for new code.** |
+| `GET` | `/openclaw/usage/analytics` | Raw per-message OpenClaw analytics. |
+| `GET` | `/openclaw/usage/summary` | Headline totals. |
+| `GET` | `/openclaw/usage/summary/card` | Compact summary card. |
+| `GET` | `/openclaw/usage/sessions` | Per-session breakdown. |
+| `GET` | `/openclaw/usage/sessions/{session_id}` | One session's usage. |
+
+<Callout type="info">
+The `/api/usage` endpoint is what the new frontend dashboards consume. The `/openclaw/usage/*` family is OpenClaw-only and predates the unified rewrite. Treat them as legacy.
+</Callout>
+
+## 1. GET /api/usage
+
+The canonical "what did this user spend" endpoint. Returns the shape the frontend dashboard expects.
+
+### Query params
+
+| Param | Type | Default | Notes |
+|---|---|---|---|
+| `days` | int | 30 | Window size. The endpoint walks JSONL for the last `days` days. |
+
+### Response (200 OK)
+
+```jsonc
+{
+  "window_days": 30,
+  "total_cost_usd": 12.4537,
+  "total_tokens": {
+    "input":       145320,
+    "output":       28411,
+    "cache_read":  894123,
+    "cache_write":  12030
+  },
+  "by_model": [
+    {
+      "model":         "anthropic/claude-sonnet-4-5",
+      "tokens_in":     120000,
+      "tokens_out":    24000,
+      "cache_read":    800000,
+      "cache_write":    8000,
+      "cost_usd":      9.84
+    }
+    // ...
+  ],
+  "by_session": [
+    {
+      "session_id":    "9d4e5f6a-...",
+      "title":         "Refactor auth flow",
+      "agent_name":    "claude_code",
+      "tokens_total":  18420,
+      "cost_usd":      0.51,
+      "messages":      14
+    }
+    // ...
+  ],
+  "daily": [
+    {
+      "date":         "2026-05-09",
+      "cost_usd":     0.42,
+      "tokens_total": 18120,
+      "tool_calls":   23
+    }
+    // ...
+  ],
+  "tool_usage": [
+    { "tool": "Read",  "count": 142 },
+    { "tool": "Edit",  "count":  87 }
+    // ...
+  ],
+  "response_time_ms": {
+    "p50": 4823,
+    "p95": 18402,
+    "p99": 36210
+  }
+}
+```
+
+The response is recomputed on every request. There is no cache layer; if your dashboard polls aggressively, throttle on the client side.
+
+### Frontend example
+
+```typescript
+type Usage = {
+  window_days: number;
+  total_cost_usd: number;
+  total_tokens: { input: number; output: number; cache_read: number; cache_write: number };
+  by_model: Array<{
+    model: string;
+    tokens_in: number; tokens_out: number;
+    cache_read: number; cache_write: number;
+    cost_usd: number;
+  }>;
+  by_session: Array<{
+    session_id: string; title: string; agent_name: string;
+    tokens_total: number; cost_usd: number; messages: number;
+  }>;
+  daily: Array<{ date: string; cost_usd: number; tokens_total: number; tool_calls: number }>;
+  tool_usage: Array<{ tool: string; count: number }>;
+  response_time_ms: { p50: number; p95: number; p99: number };
+};
+
+async function loadUsage(days = 30): Promise<Usage> {
+  return api<Usage>(`/api/usage?days=${days}`);
+}
+```
+
+## 2. /openclaw/usage/* (legacy)
+
+These endpoints expose the OpenClaw-only usage parser used by `services/cowork_agent/adapters/openclaw/usage.py`. Same data feeds `/api/usage`, but unfiltered and without Claude Code merge.
+
+### `GET /openclaw/usage/analytics`
+
+```jsonc
+{
+  "messages": [
+    {
+      "session_id":  "...",
+      "model":       "openclaw/main",
+      "tokens_in":   1024,
+      "tokens_out":   512,
+      "cost_usd":    0.018,
+      "tools":       ["fetch", "search"],
+      "timestamp":   "2026-05-10T12:34:56+00:00"
+    }
+    // ... raw per-message records
+  ]
+}
+```
+
+### `GET /openclaw/usage/summary`
+
+Headline totals over the entire OpenClaw history (no `days` filter):
+
+```jsonc
+{
+  "total_cost_usd": 27.18,
+  "total_messages": 1842,
+  "total_tokens":   { "input": 1230000, "output": 410000 }
+}
+```
+
+### `GET /openclaw/usage/summary/card`
+
+Compact card for embedding in a sidebar:
+
+```jsonc
+{
+  "label":       "OpenClaw usage",
+  "value":       "$27.18",
+  "subtitle":    "1,842 messages this month",
+  "trend_pct":   12.4
+}
+```
+
+### `GET /openclaw/usage/sessions`
+
+Per-session breakdown:
+
+```jsonc
+{
+  "sessions": [
+    {
+      "session_id":   "...",
+      "title":        "...",
+      "messages":     14,
+      "cost_usd":     0.51,
+      "tokens_total": 18420,
+      "updated_at":   "2026-05-10T12:34:56+00:00"
+    }
+  ]
+}
+```
+
+### `GET /openclaw/usage/sessions/&#123;session_id&#125;`
+
+Per-message records for one session. Same schema as `/openclaw/usage/analytics`, scoped by `session_id`.
+
+## 3. Daily sync to swarm (background)
+
+`services/usage_sync.py` runs as an asyncio background task started in the FastAPI lifespan. It is **not** an HTTP endpoint, but it touches the same data the read endpoints do:
+
+```
+1. Walk OpenClaw JSONL session files under the workspace.
+2. Extract per-message tokens (input, output, cacheRead, cacheWrite), cost, model, tool names.
+3. Aggregate per day plus per-model breakdown.
+4. POST to xo-swarm-api /usage/report with the Bearer token from auth_state.
+5. Persist a watermark to data/openclaw/usage_sync_state.json.
+```
+
+The first run does a full backfill; subsequent runs are incremental. Trigger time defaults to `02:00 UTC`, configurable via `USAGE_SYNC_HOUR_UTC`.
+
+Frontends never call this; they read `/api/usage` for the in-app dashboard.
+
+## 4. What's not here
+
+- **No mutation.** `/api/usage` is read-only. Cost is computed from the JSONL records.
+- **No alerting.** There is no "you're over budget" hook. Build it client-side off the response.
+- **No retention policy.** JSONL is kept indefinitely; if you want to prune, drop session files manually.
+
+<Callout type="warn">
+The cost figures are derived from per-token unit prices baked into the parser. Keep an eye on the model catalog: when Anthropic or OpenAI release new models with new pricing, the parser must be updated to recognize them.
+</Callout>

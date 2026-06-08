@@ -1,0 +1,47 @@
+# ── Dependencies ─────────────────────────────────────────────
+node_modules/
+.pnpm-store/
+
+# ── JS / Next.js / build outputs ─────────────────────────────
+.next/
+out/
+dist/
+build/
+.turbo/
+.source/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Test / coverage ──────────────────────────────────────────
+coverage/
+.vitest/
+
+# ── Environment (never commit real secrets) ──────────────────
+.env
+.env.local
+.env.*.local
+# Keep templates tracked: .env.example, .example.env, agents.env
+
+# ── Python (services/*) ──────────────────────────────────────
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.uv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# ── Tooling / local session (root only; per-app .claude/ is kept) ─
+/.claude/
+
+# ── OS / editors ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+*.swp

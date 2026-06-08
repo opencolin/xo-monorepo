@@ -1,0 +1,51 @@
+---
+title: API Key
+description: Connect Anthropic, OpenAI, or OpenRouter to your XO project via an API key.
+icon: Key
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Paste an API key from any supported provider — OpenRouter, Anthropic, or OpenAI. Credentials live in your project's workspace, not on the XO platform.
+
+<Callout type="info">
+  Prefer subscription auth? See [OAuth](/setup/models/oauth) to connect with your Claude or ChatGPT account instead.
+</Callout>
+
+## What You'll Need
+
+- An XO project that has finished provisioning
+- An API key from your model provider:
+  - **OpenRouter** — [openrouter.ai/keys](https://openrouter.ai/keys) (single key for 100+ models — Anthropic, OpenAI, Google, DeepSeek, and more)
+  - **Anthropic** — [console.anthropic.com](https://console.anthropic.com/settings/keys)
+  - **OpenAI** — [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+
+## Connect via API Key
+
+<Steps>
+  <Step>
+    ### Open Setup → Models
+    From your project page, open the **Setup** tab and select **Models**.
+
+    ![Setup → Models](/images/models-01-tab.jpeg)
+  </Step>
+  <Step>
+    ### Save Your API Key
+    Scroll to the **API Keys** section. Paste your key into the relevant provider's field (e.g. **Anthropic API Key**) and click **Save**.
+
+    ![Save the API key](/images/models-02-save.webp)
+  </Step>
+  <Step>
+    ### Restart the OpenClaw Gateway
+    Model changes only take effect after the Gateway restarts. Open the **Launch** tab.
+
+    ![Open the Launch tab](/images/models-03-launch.jpeg)
+
+    Click **OpenClaw Restart** to apply the new model.
+
+    ![Click OpenClaw Restart](/images/models-04-restart.jpeg)
+  </Step>
+</Steps>
+
+Your model is now connected. Send a test message to your agent to confirm it's responding with the new provider.

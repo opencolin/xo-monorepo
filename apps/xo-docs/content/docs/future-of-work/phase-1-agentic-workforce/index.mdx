@@ -1,0 +1,151 @@
+---
+title: Overview
+description: "Businesses hire agents as workers. Skill unbundles from time, and output stops being capped by headcount."
+icon: BookOpen
+---
+
+<PhaseHero
+	number="01"
+	title="Agentic Workforce"
+	tagline="Businesses hire agents as workers, not copilots. Skill unbundles from time, and output stops being capped by headcount."
+	icon="userPlus"
+/>
+
+## The shift
+
+<Lead>For all of history, buying someone's skill meant buying their time. Agents break that link.</Lead>
+
+<Unbundling />
+
+Two things change here. First, businesses stop renting a person's hours to get
+their skill and start renting the skill itself, as an agent: available on demand,
+in parallel, at any hour, for marginal cost. You hire the coding, the research, or
+the analysis directly, without hiring the forty-hour week it used to come bundled
+with.
+
+Second, the unit of work changes. Today you prompt a tool and stitch the pieces
+together yourself, so the prompt is the unit of work. As agents take on whole jobs,
+the prompt stops being the unit and the work becomes the unit: you hand over an
+outcome to own, not an instruction to run. The brain that decides what is worth
+doing stays human; the skill that executes it becomes runtime.
+
+## What a business wants
+
+<Lead>Businesses do not want to manage tokens or prompts. They want to state intent and get an outcome, the same way they delegate to a team today, only faster and cheaper.</Lead>
+
+<IntentOutcome />
+
+A business does not buy effort, it buys outcomes, and it wants them at a fixed,
+predictable cost. Tokens and prompts are the wrong unit for that: they price the
+machinery rather than the result, and they swing with how verbose a model happens
+to be. So as the work itself becomes the unit, pricing follows. Agents get charged
+by the unit of work delivered, a resolved ticket, a reviewed contract, a shipped
+report, the way you scope a contractor, not the way you read a utility meter. That
+gives a business the efficiency and predictability it already expects from every
+other line item. XO does not provide the agents or the models; you bring your own.
+XO only meters the token spend against each outcome so the price stays tied to the
+result, not the machinery.
+
+## What is a unit of work
+
+<Lead>A unit of work is a complete, verifiable outcome an agent owns end to end, not a step along the way.</Lead>
+
+<FeatureGrid
+	cols={4}
+	items={[
+		{ icon: "ticket", title: "Resolved ticket", desc: "A support issue triaged, answered, and closed." },
+		{ icon: "files", title: "Reviewed contract", desc: "A document read, risks flagged, redlines proposed." },
+		{ icon: "report", title: "Shipped report", desc: "Data pulled, analyzed, written up, delivered." },
+		{ icon: "code", title: "Merged change", desc: "A fix written, tested, reviewed, and merged." },
+	]}
+/>
+
+A prompt is an instruction and a token is a billing artifact, but a unit of work
+is the job itself. What makes something a unit of work is three things: a clear
+definition of done, a result you can actually check, and a scope small enough for
+one owner to be accountable for. If you can describe what finished and correct
+looks like, you can hand it to an agent, verify it when it comes back, and price
+it as one item. That is the unit businesses plan, budget, and pay against, which
+is why it becomes the natural thing to charge for.
+
+<FeatureGrid
+	cols={3}
+	items={[
+		{ icon: "target", title: "Definition of done", desc: "You can describe what finished and correct looks like." },
+		{ icon: "eye", title: "Verifiable result", desc: "You can check it when it comes back." },
+		{ icon: "user", title: "A single owner", desc: "Scoped small enough for one party to be accountable." },
+	]}
+/>
+
+## How we calculate a unit of work
+
+<Lead>It needs no new accounting. We measure it the way we judge work today: did the state change, and what did it cost?</Lead>
+
+<Flow
+	steps={[
+		{ icon: "target", title: "Create an action item", desc: "Name the outcome and the end state you want." },
+		{ icon: "budget", title: "Assign a budget", desc: "Set what reaching that state is worth." },
+		{ icon: "robot", title: "The agent works", desc: "It runs against the item until the state is reached." },
+		{ icon: "scales", title: "Compare and reconcile", desc: "Check the state changed, then budget against AI spend." },
+	]}
+/>
+
+The trick is that we simply compare the state, the same way a manager does today.
+You create an action item, describe the end state you want, and assign it a
+budget, exactly like scoping a ticket or briefing a contractor. The agent runs
+against it. When it reports done, there are two comparisons: the state, did the
+world actually change the way you asked, the ticket closed, the contract reviewed,
+the report delivered; and the cost, what you budgeted versus what the AI actually
+spent in tokens to get there. The budget is the value of the outcome, and the
+tokens are where the AI spends, on the model you bring. XO does not run the model,
+it only enables this tracking, and the gap between budget and spend is your
+efficiency. That is the whole calculation.
+
+This lives inside the product. Each XO workspace can hold many sessions, and you
+open a separate session per intent: one to clear the support backlog, one to
+review contracts, one for the weekly report. Every session comes with the same
+machinery enabled by default, the action item, the budget, the state check, and a
+meter on what the AI spends. Because the boundary is the session and the session
+is the intent, cost and outcome are tracked per intent instead of smeared across a
+single token bill. That is what lets you price on intent and outcome rather than
+tokens.
+
+<StateAndCost />
+
+## Who does what
+
+<SplitCompare
+	left={{
+		icon: "robot",
+		title: "Agents",
+		items: ["Execute the skill", "Work in parallel, any hour", "Produce the first pass at marginal cost"],
+	}}
+	right={{
+		icon: "brain",
+		title: "Humans",
+		items: ["Frame the problem", "Decide what good looks like", "Own the outcome"],
+	}}
+/>
+
+## In plain terms
+
+Phase 1 is the near-term shift already underway. For all of history, hiring a
+skill meant renting a person's hours, so expert work was capped by how many
+people you could afford and how many hours were in their day. Agents package the
+skill without the hours: a coding agent, a research agent, or an ops agent
+delivers practiced craft on demand, in parallel, at marginal cost. The work that
+was never economical to staff, the analysis a small business skipped or the
+research a solo founder could not justify, becomes affordable. That is why this
+expands the amount of knowledge work rather than shrinking it.
+
+What does not change is the need for a human in the loop. Someone still has to
+decide which problem is worth solving, what a good result looks like, and who is
+accountable when it ships. Phase 1 moves people from doing the work to directing
+it, and XO's job is to make an agent safe to direct in production: a known
+identity, a spending limit, a full record of what it did, and the option to run
+it inside your own cloud.
+
+The honest signal that this is real, rather than a demo, is how often a human has
+to step in to fix or redo an agent's output. When that intervention rate keeps
+falling, agents are genuinely doing the work. When it stays high, they are still
+just tools with a chat box.

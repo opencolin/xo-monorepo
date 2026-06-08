@@ -1,0 +1,83 @@
+---
+title: GitHub
+description: Connect GitHub so your agent can read repositories, issues, and pull requests.
+icon: Github
+---
+
+import { Step, Steps } from 'fumadocs-ui/components/steps';
+import { Callout } from 'fumadocs-ui/components/callout';
+
+Connect a GitHub account to your XO project so your agent can read repositories, issues, and pull requests. GitHub uses a **device code** flow — no callback URL needed.
+
+## What You'll Need
+
+- An XO project that has finished provisioning
+- A GitHub account with access to the repositories you want your agent to read
+
+## Connect GitHub
+
+<Steps>
+  <Step>
+    ### Open Setup → Data
+    From your project page, open the **Setup** tab and select **Data**.
+
+    ![Setup → Data](/images/github-01-data.jpeg)
+  </Step>
+  <Step>
+    ### Click Connect GitHub
+    On the GitHub row, click **Connect GitHub**.
+
+    ![Click Connect GitHub](/images/github-02-connect.jpeg)
+  </Step>
+  <Step>
+    ### Select an Authentication Method
+    Pick how you want to authenticate:
+
+    - **Device code** *(used in this guide)* — XO generates a one-time code that you paste into GitHub. No long-lived secret stored, simplest flow.
+    - **Personal Access Token (PAT)** — paste a token you create from your [GitHub developer settings](https://github.com/settings/tokens). Use this if you want fine-grained scopes or if your org disallows OAuth device flows.
+
+    ![Select an authentication method](/images/github-03-method.jpeg)
+
+    <Callout type="info">
+      The remaining steps follow the **Device code** flow. If you picked PAT, paste the token, click Continue, and skip to the **Connection Confirmed** step.
+    </Callout>
+  </Step>
+  <Step>
+    ### Generate an Activation Code
+    Click **Start** to generate a one-time activation code.
+
+    ![Click Start](/images/github-04-start.jpeg)
+  </Step>
+  <Step>
+    ### Copy the Code
+    Copy the activation code, then click the link to open the GitHub activation page in a new tab.
+
+    ![Copy the activation code](/images/github-05-copy.webp)
+  </Step>
+  <Step>
+    ### Continue on GitHub
+    On GitHub's activation page, confirm your account by clicking **Continue**.
+
+    ![Click Continue](/images/github-06-continue.jpeg)
+  </Step>
+  <Step>
+    ### Paste and Authorize
+    Paste the activation code into the field and click **Continue**.
+
+    ![Paste the activation code](/images/github-07-paste.webp)
+
+    Then click **Authorize github** to grant XO access.
+
+    ![Click Authorize github](/images/github-08-authorize.jpeg)
+  </Step>
+  <Step>
+    ### Connection Confirmed
+    GitHub is now connected. You'll see a confirmation in the activation tab and the new remote in your project's Data list.
+
+    ![GitHub connected](/images/github-09-connected.jpeg)
+
+    ![GitHub remote in the Data list](/images/github-10-dashboard.jpeg)
+  </Step>
+</Steps>
+
+Your GitHub account is now connected. Your agent can read from it on subsequent runs.

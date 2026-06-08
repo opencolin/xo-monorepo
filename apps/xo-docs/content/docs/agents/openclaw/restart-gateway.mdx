@@ -1,0 +1,70 @@
+---
+title: Restart the Gateway
+description: Restart the OpenClaw gateway using the dashboard button or the terminal.
+icon: RotateCcw
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+Two ways to restart your OpenClaw gateway — the dashboard button (fastest) or the terminal command (gives you logs).
+
+<Tabs items={['Dashboard Button', 'Terminal Command']}>
+  <Tab value="Dashboard Button">
+    ## Restart from Dashboard
+
+    1. Open your project on [beta.xo.builders](https://beta.xo.builders) and select your agent from the sidebar.
+
+    ![Select your agent](/images/cfg-02-select-agent.jpeg)
+
+    2. Open the **Launch** tab.
+
+    ![Open the Launch tab](/images/claude-code-setup-08-launch.jpeg)
+
+    3. Click **OpenClaw Restart**.
+
+    ![Click OpenClaw Restart](/images/cfg-09-restart-click.jpeg)
+
+    4. Wait for the **OpenClaw gateway restarted** confirmation.
+
+    ![Gateway restart confirmed](/images/cfg-10-restart-confirmed.jpeg)
+
+    The gateway is now restarting. Wait a minute before opening the gateway again.
+  </Tab>
+
+  <Tab value="Terminal Command">
+    ## Restart from Terminal
+
+    1. Open the **Launch** tab on your project.
+
+    ![Open the Launch tab](/images/claude-code-setup-08-launch.jpeg)
+
+    2. Under **Agent Connections**, click **code-server** to open the browser-based VS Code.
+
+    ![Click code-server](/images/cfg-07-codeserver.jpeg)
+
+    3. Open the terminal with `Ctrl + backtick`
+
+    ![Open terminal](/images/restart-open-terminal.jpeg)
+
+    4. Run the restart command:
+
+    ```bash
+    ./xo-cowork-api/openclaw.sh restart
+    ```
+
+    ![Run restart command](/images/restart-run-command.jpeg)
+
+    5. Check the output for any errors
+
+    ![Gateway output](/images/restart-gateway-output.jpeg)
+
+    6. Check `openclaw-gateway.log` for detailed logs if needed
+
+    ![Gateway log file](/images/restart-gateway-log.jpeg)
+
+    <Callout type="info">
+      The terminal method is better for debugging — you can see errors in real time and check log files.
+    </Callout>
+  </Tab>
+</Tabs>

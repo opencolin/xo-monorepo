@@ -1,0 +1,1147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>XO Phone, screens the user sees</title>
+  <style>
+    :root {
+      --lime: #83d63a;
+      --lime-soft: rgba(131, 214, 58, 0.15);
+      --lime-edge: rgba(131, 214, 58, 0.55);
+      --ink: #08090A;
+      --ink-2: #131416;
+      --ink-3: #1c1c1e;
+      --text: #ffffff;
+      --text-2: rgba(255,255,255,0.72);
+      --text-3: rgba(255,255,255,0.5);
+      --divider: rgba(255,255,255,0.08);
+      --amber: #ffb547;
+      --amber-soft: rgba(255, 181, 71, 0.12);
+      --red: #ff6b6b;
+      --blue: #64b5f6;
+      --blue-soft: rgba(100, 181, 246, 0.15);
+      --violet: #b794ff;
+      --violet-soft: rgba(183, 148, 255, 0.15);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      background: var(--ink); color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      line-height: 1.55; -webkit-font-smoothing: antialiased;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 56px 24px 96px; }
+
+    header { border-bottom: 1px solid var(--divider); padding-bottom: 32px; margin-bottom: 36px; }
+    .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+    .brand-mark { width: 36px; height: 36px; }
+    .brand-text { font-weight: 700; letter-spacing: 0.01em; color: var(--lime); font-size: 14px; text-transform: uppercase; }
+    h1 { font-size: 36px; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 10px; }
+    .sub { color: var(--text-2); font-size: 15px; margin: 0; }
+    .meta-row { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+    .pill { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; background: var(--ink-3); color: var(--text-2); border: 1px solid var(--divider); }
+    .pill.lime { background: var(--lime-soft); color: var(--lime); border-color: var(--lime-edge); }
+    .pill.amber { background: var(--amber-soft); color: var(--amber); border-color: rgba(255,181,71,0.4); }
+
+    .tldr {
+      background: linear-gradient(180deg, var(--lime-soft), transparent);
+      border: 1px solid var(--lime-edge); border-radius: 16px;
+      padding: 22px 26px; margin: 24px 0 8px;
+    }
+    .tldr p { margin: 0; color: var(--text); }
+    .tldr strong { color: var(--lime); }
+
+    h2 {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.015em;
+      margin: 56px 0 6px;
+    }
+    h2 .num { color: var(--lime); margin-right: 14px; font-variant-numeric: tabular-nums; }
+    .section-sub { color: var(--text-2); font-size: 13.5px; margin: 0 0 16px; }
+    code {
+      background: var(--ink-3); padding: 1px 6px; border-radius: 4px;
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 11.5px; color: var(--lime);
+    }
+
+    .screen-card {
+      border: 1px solid var(--divider); border-radius: 18px;
+      background: var(--ink-2); padding: 24px 26px; margin: 20px 0;
+    }
+    .screen-card.deferred { border-style: dashed; opacity: 0.92; }
+    .screen-card.overlay { background: linear-gradient(180deg, var(--blue-soft), transparent), var(--ink-2); }
+    .screen-card.transition { background: linear-gradient(180deg, var(--violet-soft), transparent), var(--ink-2); }
+    .screen-card-header { margin-bottom: 18px; }
+    .screen-card-num {
+      display: inline-block; background: var(--lime); color: var(--ink);
+      font-weight: 700; font-size: 10.5px; padding: 4px 12px; border-radius: 999px;
+      margin-bottom: 10px; letter-spacing: 0.07em;
+    }
+    .screen-card.deferred .screen-card-num { background: var(--amber); }
+    .screen-card.overlay .screen-card-num { background: var(--blue); color: white; }
+    .screen-card.transition .screen-card-num { background: var(--violet); color: var(--ink); }
+    .screen-card-title {
+      font-size: 21px; font-weight: 700; letter-spacing: -0.01em; color: var(--text);
+      margin: 0 0 4px;
+    }
+    .screen-card-meta {
+      color: var(--text-3); font-size: 12px;
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+    }
+
+    .screen-body {
+      display: grid; grid-template-columns: 1fr; gap: 22px; align-items: start;
+    }
+    @media (min-width: 760px) {
+      .screen-body { grid-template-columns: 300px 1fr; gap: 28px; }
+    }
+
+    .phone-frame {
+      background: var(--ink); border: 1px solid var(--divider);
+      border-radius: 28px; padding: 18px 12px;
+      font-family: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 10.5px; line-height: 1.5; color: var(--text);
+      white-space: pre; overflow-x: auto;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+    }
+
+    .screen-details > section + section { margin-top: 18px; }
+    .screen-details h4 {
+      font-size: 10.5px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--text-3); margin: 0 0 8px;
+    }
+    .screen-list { list-style: none; padding: 0; margin: 0; }
+    .screen-list li {
+      padding: 5px 0 5px 22px; font-size: 13px; color: var(--text);
+      position: relative; line-height: 1.55;
+    }
+    .screen-list li code { font-size: 11px; }
+    .screen-list.shows li::before { content: '\2022'; position: absolute; left: 6px; top: 4px; color: var(--lime); font-weight: 700; font-size: 14px; }
+    .screen-list.actions li::before { content: '\2192'; position: absolute; left: 2px; top: 4px; color: var(--blue); font-weight: 700; font-size: 12px; }
+    .screen-list.nav li::before { content: '\21B3'; position: absolute; left: 2px; top: 4px; color: var(--amber); font-weight: 700; font-size: 12px; }
+    .screen-list.data li::before { content: '\25C6'; position: absolute; left: 4px; top: 8px; color: var(--text-3); font-size: 8px; }
+    .screen-list.tbd li::before { content: '?'; position: absolute; left: 4px; top: 4px; color: var(--amber); font-weight: 700; font-size: 13px; }
+
+    footer {
+      margin-top: 72px; padding-top: 24px; border-top: 1px solid var(--divider);
+      color: var(--text-3); font-size: 12px;
+      display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+
+    @media print {
+      body { background: white; color: black; }
+      .phone-frame { background: #fafafa !important; color: #000 !important; border: 1px solid #ccc !important; box-shadow: none !important; font-size: 9px; }
+      .screen-card { background: white !important; border: 1px solid #ccc !important; }
+      .screen-card.overlay { background: #eaf2fb !important; }
+      .screen-card.transition { background: #efe6f9 !important; }
+      .tldr { background: #ecf6dd !important; color: #000; border-color: #83d63a; }
+      .tldr p, .tldr strong { color: #000 !important; }
+      p, .sub, .section-sub, .screen-card-meta { color: #222 !important; }
+      h1, h2, h3, h4, .screen-card-title { color: #000 !important; }
+      h2 .num { color: #6cbd2c !important; }
+      code { background: #eee; color: #2a6a08; }
+      .pill { background: #eee; color: #444; border-color: #ccc; }
+      .pill.lime { background: #ecf6dd; color: #4a7a18; }
+      h2 { page-break-after: avoid; }
+      .screen-card { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M18 28 L38 50 L18 72" stroke="white" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M82 28 L62 50 L82 72" stroke="white" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M32 28 L52 50 L32 72" stroke="#83d63a" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M68 28 L48 50 L68 72" stroke="#83d63a" stroke-width="6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="brand-text">XO Phone</span>
+    </div>
+    <h1>Screens the user sees</h1>
+    <p class="sub">Every screen in v.Next as a phone-frame mockup, with what's on it, what the user can do, where they came from, and what data sources back it.</p>
+    <div class="meta-row">
+      <span class="pill lime">companion to V_NEXT_PLAN.html</span>
+      <span class="pill amber">section-by-section fill-in</span>
+      <span class="pill">last updated: 2026-05-20</span>
+    </div>
+  </header>
+
+  <div class="tldr">
+    <p><strong>What's new in this revision.</strong> Chat is the leftmost dock button (no separate widget). Three overlays consolidated into one (top swipe-down anywhere). Agent mode has iOS-style sub-pages (cowork apps push it past one screen). Agent can drive the OS via <code>client-action</code> SSE events. Sign-in is required, gated after the Via demo. Dock middles stay empty for v.Next.</p>
+  </div>
+
+  <!-- Section 1: Entry -->
+  <h2><span class="num">1.</span>Entry</h2>
+  <p class="section-sub">The cold-load gate. First impression. Theatre before the OS reveals.</p>
+
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 01 &middot; auth:none</span>
+      <h3 class="screen-card-title">Lockscreen</h3>
+      <span class="screen-card-meta">cold load &middot; hosts Mood + Thought widgets &middot; tap Via to pat</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474;                          &#9474;
+&#9474;          9:41            &#9474;
+&#9474;                          &#9474;
+&#9474;   "agents that work       &#9474;  Thought of the day
+&#9474;    for you"               &#9474;  (replaces date)
+&#9474;                          &#9474;
+&#9474;       &#9586;&#9586;   &#9586;&#9586;          &#9474;
+&#9474;        &#9586;&#9586;   &#9586;&#9586;         &#9474;  Via chevron
+&#9474;       &#9585;&#9585;   &#9585;&#9585;          &#9474;  (Mood widget)
+&#9474;        &#9585;&#9585;   &#9585;&#9585;         &#9474;
+&#9474;          &#9687;&#8255;&#9687;  idle       &#9474;  current expression
+&#9474;      &#9651;                  &#9474;
+&#9474;      tap to pat &#8594;        &#9474;  interaction hint
+&#9474;                          &#9474;
+&#9474;  swipe up to unlock      &#9474;
+&#9474;        &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;            &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen</h4>
+          <ul class="screen-list shows">
+            <li>StatusBar with live clock + signal/wifi/battery (decorative)</li>
+            <li>Dynamic Island cosmetic pill</li>
+            <li>Large clock (HH:MM, live)</li>
+            <li><strong>Thought of the day widget</strong>: one-line quip beneath the clock (replaces the old date line)</li>
+            <li><strong>Mood widget</strong>: Via chevron rendered with current expression (default: idle). The focal element of the lockscreen.</li>
+            <li>Tap hint: "tap to pat" near Via</li>
+            <li>"Swipe up to unlock" hint + pill indicator</li>
+            <li>Animated wallpaper continues to drift behind everything</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li><strong>Tap Via &#8594; pat</strong>: Via briefly switches to <code>happy</code> expression + bounce animation (~1s), reverts to current state after ~3s. No network call; pure feel-good.</li>
+            <li>Tap Thought of the day &#8594; cycles to next quip (refetch from <code>/api/widgets/quip</code>)</li>
+            <li>Swipe up from bottom 30px to unlock</li>
+            <li>Tap the swipe-up pill</li>
+            <li>Press Esc / Space / Enter</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Comes from / goes to</h4>
+          <ul class="screen-list nav">
+            <li>From: cold load OR re-lock from side button</li>
+            <li>Any unlock action &#8594; Screen 02 (Landing) with slide-up exit (~900ms)</li>
+            <li>Tap-to-pat does NOT unlock; just plays the pat animation</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Data sources</h4>
+          <ul class="screen-list data">
+            <li>Mood: derived from AgentContext locally; on tap, ephemerally overridden to <code>happy</code> for ~3s</li>
+            <li>Thought: <code>GET /api/widgets/quip</code> (Next proxy) on mount + on user tap (cycle)</li>
+            <li>Clock: <code>PhoneContext.status.time</code></li>
+            <li>No Clerk session required (lockscreen is <code>auth:none</code>)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>Pat animation specifics (bounce curve, scale amount, color flash)</li>
+            <li>"Other lockscreen interactivity" still TBD (e.g., long-press for more Via reactions, drag Via around)</li>
+            <li>Quip source: local content vs cowork-api endpoint</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Modes -->
+  <h2><span class="num">2.</span>Modes, three pages</h2>
+  <p class="section-sub">After unlock the user lands on Landing (page 1) and swipes between pages. Each swipe fires the mode-change choreography. Agent mode has iOS-style sub-pages inside it.</p>
+
+  <!-- SCREEN 02: Landing -->
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 02 &middot; PAGE 1 &middot; auth:public</span>
+      <h3 class="screen-card-title">Landing home</h3>
+      <span class="screen-card-meta">first page after unlock &middot; 5 tiles &middot; dock with auth-conditional rightmost</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9488; &#9484;&#9472;&#9472;&#9488;   &#9474;
+&#9474;  &#9474;&#128214;&#9474; &#9474;&#128211;&#9474; &#9474; $&#9474; &#9474; &#9654;&#9474;   &#9474;  Docs Journal Pricing Demo
+&#9474;  &#9492;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9496; &#9492;&#9472;&#9472;&#9496;   &#9474;
+&#9474;  Docs Jrnl Prc  Demo     &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9488;                  &#9474;
+&#9474;  &#9474;&#127881;&#9474;                  &#9474;  Get Started
+&#9474;  &#9492;&#9472;&#9472;&#9496;                  &#9474;
+&#9474;  Start                   &#9474;
+&#9474;                          &#9474;
+&#9474;                          &#9474;
+&#9474;          &#9679; &#9675; &#9675;          &#9474;  outer (mode) dots
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9488;        &#9474;
+&#9474;  &#9474;&#128172;&#9474; i &#9474;&#9586;&#9586;&#9474;&#8599; &#9474;        &#9474;  Chat About Via Sign Up
+&#9474;  &#9492;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9496;        &#9474;
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen</h4>
+          <ul class="screen-list shows">
+            <li>Five tiles in 4-col grid:
+              <ul style="margin: 4px 0 0 18px; padding: 0; list-style: disc;">
+                <li>Docs &middot; documentation entry</li>
+                <li>Journal &middot; <strong>new app for v.Next</strong>, spec TBD</li>
+                <li>Pricing &middot; same as v0</li>
+                <li>Demo &middot; same as v0</li>
+                <li>Get Started &middot; CTA, repointed (target TBD now that setup mode is hidden)</li>
+              </ul>
+            </li>
+            <li>Coworker + Swarm have moved off Landing (they live in Agent mode)</li>
+            <li>Outer page dots (3 modes, Landing active)</li>
+            <li>Dock: <strong>Chat &middot; About &middot; Via</strong> + auth-conditional rightmost:
+              <ul style="margin: 4px 0 0 18px; padding: 0; list-style: disc;">
+                <li>Signed out: <strong>Sign Up</strong> (external, opens app.xo.builders/signup)</li>
+                <li>Signed in: <strong>Create Your Own</strong> (target TBD)</li>
+              </ul>
+            </li>
+            <li>No widgets on the grid (Mood + Thought of the day live on lockscreen)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Tap any tile &#8594; AppView with layoutId morph</li>
+            <li>Tap <strong>Chat</strong> (dock leftmost) &#8594; expand chat (Screen 08, 09)</li>
+            <li>Tap <strong>About</strong> (dock slot 2) &#8594; opens About app (existing v0 route)</li>
+            <li>Tap <strong>Via</strong> (dock slot 3) &#8594; opens "About Via" surface (explains the mascot)</li>
+            <li>Tap rightmost dock:
+              <ul style="margin: 4px 0 0 18px; padding: 0; list-style: disc;">
+                <li>Signed out &#8594; new tab to app.xo.builders/signup</li>
+                <li>Signed in &#8594; Create Your Own flow (target TBD)</li>
+              </ul>
+            </li>
+            <li>Swipe left &#8594; Screen 03 transition &#8594; Screen 04 (Agent home); if signed out, this fires the Clerk gate (Screen 12) first</li>
+            <li>Swipe down from top (anywhere) &#8594; Screen 11 (consolidated Overlay)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Data sources</h4>
+          <ul class="screen-list data">
+            <li>None on the page (static tile data from <code>data/apps.ts</code>)</li>
+            <li>Auth state from Clerk (decides which rightmost dock button to render)</li>
+            <li>Live clock from <code>PhoneContext.status.time</code></li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>Journal app: full spec (content kind, source, in-app design) in its own session</li>
+            <li>Get Started tile: where does it point now that setup mode is hidden?</li>
+            <li>Create Your Own button: target route / flow (workspace creation on app.xo.builders or in-OS surface?)</li>
+            <li>About route: confirm it's the v0 About app (already exists) or a fresh build</li>
+            <li>"Via" dock button: opens a new "About Via" surface — does it exist as an app, or is it a one-off page / route?</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 03: Mode swipe transition -->
+  <div class="screen-card transition">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 03 &middot; TRANSITION</span>
+      <h3 class="screen-card-title">Mode swipe, mid-flight</h3>
+      <span class="screen-card-meta">~600ms choreography between any two modes</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474;                          &#9474;
+&#9474;  Landing &#8592;        &#8594; Agent &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9474; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488;  &#9474;
+&#9474;  &#9474;Co&#9474; &#9474;Sw&#9474; &#9474; &#9474;Co&#9474; &#9474;Sw&#9474; &#9474; $&#9474;  &#9474;
+&#9474;  &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9474; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496;  &#9474;
+&#9474;  &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9474; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488;  &#9474;
+&#9474;  &#9474; &#9654;&#9474; &#9474; &#9654;&#9474; &#9474; &#9474; &#9654;&#9474; &#9474;&#128214;&#9474; &#9474; H&#9474;  &#9474;
+&#9474;  &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9474; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496;  &#9474;
+&#9474;                          &#9474;
+&#9474; wallpaper crossfading    &#9474;
+&#9474; status bar tinting       &#9474;
+&#9474; dock sliding             &#9474;
+&#9474;                          &#9474;
+&#9474;          &#9675; &#9679; &#9675;          &#9474;  outer dots animating
+&#9474;  &#9484;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9488;  &#8592;&#8592;    &#9474;
+&#9474;  &#9474;&#128172;&#9474;  &#9474;  &#9474;&#8599; &#9474;        &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9496;        &#9474;
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's animating</h4>
+          <ul class="screen-list shows">
+            <li>Grid: old page slides out, new page slides in (horizontal translate)</li>
+            <li>Wallpaper: crossfades between old and new mode's wallpaper</li>
+            <li>Status bar: tint shifts to new mode's color</li>
+            <li>Dock: old dock slides down + new dock slides in (Chat + Sign up stay; middle empties also swap if any)</li>
+            <li>Outer dots: active dot animates to new position</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Timing (per MODES_PLAN &sect;8.2)</h4>
+          <ul class="screen-list shows">
+            <li>0&ndash;250ms: old icons + dock fade out</li>
+            <li>150&ndash;450ms: wallpaper crossfade</li>
+            <li>250&ndash;550ms: status bar tint</li>
+            <li>450&ndash;700ms: new dock slides up</li>
+            <li>500&ndash;750ms: new icons fade in</li>
+            <li>Reduced-motion: instant cross-dissolve, ~150ms</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Triggered by</h4>
+          <ul class="screen-list nav">
+            <li>Horizontal swipe past 30% width OR velocity threshold</li>
+            <li>URL <code>?mode=agent</code> change (via deep link)</li>
+            <li>Agent <code>client-action</code> with <code>{kind:"navigate"}</code> to an app in a different mode</li>
+          </ul>
+        </section>
+        <section>
+          <h4>During transition</h4>
+          <ul class="screen-list tbd">
+            <li>GestureSurface locks new gestures (~600ms)</li>
+            <li>Tapping a tile mid-transition: queued or dropped (TBD)</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 04: Agent home -->
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 04 &middot; PAGE 2 &middot; auth:required</span>
+      <h3 class="screen-card-title">Agent home, first sub-page</h3>
+      <span class="screen-card-meta">full XO suite + cowork apps + widgets &middot; sign-in required to reach</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488;        &#9474;
+&#9474; &#9474;Co&#9474; &#9474;Sw&#9474; &#9474; $&#9474; &#9474; &#9654;&#9474;        &#9474;
+&#9474; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496;        &#9474;
+&#9474; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488;        &#9474;
+&#9474; &#9474;&#128214;&#9474; &#9474; H&#9474; &#9474; &#9881;&#9474; &#9474;&#128483;&#9474;        &#9474;
+&#9474; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496;        &#9474;
+&#9474; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488;            &#9474;
+&#9474; &#9474; F&#9474; &#9474; A&#9474; &#9474; #&#9474;            &#9474;  cowork API apps:
+&#9474; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496;            &#9474;  Files Agents Channels
+&#9474;                          &#9474;
+&#9474; &#9556;&#9552;&#9552;&#9552;&#9559; &#9556;&#9552;&#9552;&#9559; &#9556;&#9552;&#9552;&#9552;&#9559; &#9474;
+&#9474; &#9474;&#9679;idle&#9474; &#9474;Via &#9474; &#9474;quip&#9474; &#9474;  3 widgets
+&#9474; &#9562;&#9552;&#9552;&#9552;&#9565; &#9562;&#9552;&#9552;&#9565; &#9562;&#9552;&#9552;&#9552;&#9565; &#9474;
+&#9474;                          &#9474;
+&#9474;          &#9679; &#9675;            &#9474;  inner (sub-page) dots
+&#9474;          &#9675; &#9679; &#9675;          &#9474;  outer (mode) dots
+&#9474;  &#9484;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9488;        &#9474;
+&#9474;  &#9474;&#128172;&#9474;  &#9474;  &#9474;&#8599; &#9474;        &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9496;        &#9474;
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen</h4>
+          <ul class="screen-list shows">
+            <li>Mix of v0 default native apps (Coworker, Swarm, Pricing, Demo, Docs, Handbook, Settings, Talk) AND cowork-derived API apps (Files, Agents, Channels, Usage, Connectors). <strong>Sessions removed</strong>: single-session-per-user means the conversation is the dock chat, not a separate app.</li>
+            <li>Three widgets above dock: Agent Status, Mood (Via), Thought for the day</li>
+            <li>Two stacks of dots: <strong>inner</strong> (sub-pages within Agent) and <strong>outer</strong> (modes)</li>
+            <li>Dock: Chat &middot; (empty) &middot; (empty) &middot; Sign up (same as other modes)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Tap any tile &#8594; AppView (native or cowork data render)</li>
+            <li>Tap Chat (dock leftmost) &#8594; expand chat (Screen 08, 09)</li>
+            <li>Swipe horizontally INSIDE the mode &#8594; sub-page (Screen 05)</li>
+            <li>Swipe between MODES from edges &#8594; mode transition (Screen 03)</li>
+            <li>Tap a widget &#8594; opens / expands chat or cycles content</li>
+            <li>Swipe down from top &#8594; Overlay (Screen 11)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Data sources</h4>
+          <ul class="screen-list data">
+            <li>Widget Agent Status &#8594; <code>GET /api/widgets/agent-status</code> (Next proxy &#8594; cowork <code>/api/agents/</code>) poll 30s</li>
+            <li>Widget Mood &#8594; derived from AgentContext (no network)</li>
+            <li>Widget Thought &#8594; <code>GET /api/widgets/quip</code> (Next proxy, source TBD)</li>
+            <li>Cowork apps fetch their data via Next routes when their AppView opens</li>
+            <li>Auth: Next routes inject <code>Authorization: Bearer XO_API_KEY</code> + <code>X-XO-Username</code> from Clerk session</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>Dock middles stay empty for v.Next</li>
+            <li>Sub-page overflow rule (how many icons per page before pagination)</li>
+            <li>Which 3-5 cowork apps to ship first</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 05: Agent sub-page swipe -->
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 05 &middot; SUB-PAGE &middot; auth:required</span>
+      <h3 class="screen-card-title">Agent sub-page (iOS-style within mode)</h3>
+      <span class="screen-card-meta">swipe within the mode &middot; dock stays constant &middot; inherits Agent's auth</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488;        &#9474;
+&#9474; &#9474;Cn&#9474; &#9474; U&#9474; &#9474; @&#9474; &#9474;&#916; &#9474;        &#9474;  Connectors, Usage,
+&#9474; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496;        &#9474;  Customers, Changelog
+&#9474; &#9484;&#9472;&#9488; &#9484;&#9472;&#9488;                  &#9474;
+&#9474; &#9474; i&#9474; &#9474;&#128231;&#9474;                  &#9474;  About, Talk-to-human
+&#9474; &#9492;&#9472;&#9496; &#9492;&#9472;&#9496;                  &#9474;
+&#9474;                          &#9474;
+&#9474;  (more apps overflow      &#9474;
+&#9474;   from sub-page 1 here)   &#9474;
+&#9474;                          &#9474;
+&#9474; &#9556;&#9552;&#9552;&#9552;&#9559; &#9556;&#9552;&#9552;&#9559; &#9556;&#9552;&#9552;&#9552;&#9559; &#9474;
+&#9474; &#9474;&#9679;idle&#9474; &#9474;Via &#9474; &#9474;quip&#9474; &#9474;  widgets visible on every
+&#9474; &#9562;&#9552;&#9552;&#9552;&#9565; &#9562;&#9552;&#9552;&#9565; &#9562;&#9552;&#9552;&#9552;&#9565; &#9474;  sub-page of agent mode
+&#9474;                          &#9474;
+&#9474;          &#9675; &#9679;            &#9474;  inner dots: sub-page 2 active
+&#9474;          &#9675; &#9679; &#9675;          &#9474;  outer dots: agent mode
+&#9474;  &#9484;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9488;        &#9474;
+&#9474;  &#9474;&#128172;&#9474;  &#9474;  &#9474;&#8599; &#9474;        &#9474;  dock UNCHANGED across sub-pages
+&#9474;  &#9492;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9496;        &#9474;  (only changes between modes)
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen</h4>
+          <ul class="screen-list shows">
+            <li>Overflow apps from sub-page 1 (rest of the Agent mode catalog)</li>
+            <li>Same widgets (visible on every sub-page)</li>
+            <li>Same dock (Chat + Sign up + empty middles) constant across sub-pages</li>
+            <li>Inner dots: shows which sub-page is active (here, sub-page 2 of 2)</li>
+            <li>Outer dots: still showing Agent mode is active</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Swipe left/right within the mode &#8594; switch sub-pages (~280ms snap)</li>
+            <li>Tap inner dot &#8594; jump to that sub-page</li>
+            <li>Swipe past the last sub-page &#8594; transitions to NEXT MODE (Public)</li>
+            <li>All other actions same as Screen 04</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Key UX departure from iOS</h4>
+          <ul class="screen-list shows">
+            <li>iPhone: dock is constant across home pages</li>
+            <li>XO Phone: dock changes between MODES, but constant WITHIN sub-pages of a mode</li>
+            <li>So: swipe inside Agent mode &#8594; same dock. Swipe to Public mode &#8594; different dock.</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>Threshold: how many apps before a sub-page splits? Fixed (e.g. 12) or layout-driven?</li>
+            <li>Ordering: how does the registry decide which apps go on which sub-page?</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 06: Public placeholder -->
+  <div class="screen-card deferred">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 06 &middot; PAGE 3 &middot; auth:public</span>
+      <h3 class="screen-card-title">Public, placeholder</h3>
+      <span class="screen-card-meta">deferred &middot; holds the swipe target &middot; placeholder access policy</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474;                          &#9474;
+&#9474;                          &#9474;
+&#9474;                          &#9474;
+&#9474;      Public mode         &#9474;
+&#9474;                          &#9474;
+&#9474; agent folders made       &#9474;
+&#9474; public to improve        &#9474;
+&#9474; the agents               &#9474;
+&#9474;                          &#9474;
+&#9474; (planned in its own      &#9474;
+&#9474;  session, full spec TBD) &#9474;
+&#9474;                          &#9474;
+&#9474;          &#9675; &#9675; &#9679;          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9488;        &#9474;
+&#9474;  &#9474;&#128172;&#9474;  &#9474;  &#9474;&#8599; &#9474;        &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9496;        &#9474;
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen</h4>
+          <ul class="screen-list shows">
+            <li>Page title: "Public mode"</li>
+            <li>Hint: "agent folders made public to improve the agents"</li>
+            <li>Outer dots: page 3 active</li>
+            <li>Dock convention same: Chat &middot; empty &middot; empty &middot; Sign up</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Swipe right &#8594; back to Agent home</li>
+            <li>Tap Chat &#8594; expand chat (same as everywhere)</li>
+            <li>Tap Sign up &#8594; handoff</li>
+          </ul>
+        </section>
+        <section>
+          <h4>To resolve in its dedicated session</h4>
+          <ul class="screen-list tbd">
+            <li>Which folders are "public", how they're marked on cowork-api</li>
+            <li>Visitor view: files only? interactive agent over them?</li>
+            <li>Improvement loop: feedback collection, where it stores</li>
+            <li>Access policy: anonymous read, signed-in to contribute?</li>
+            <li>Dock items, widgets, sub-pages</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Chat -->
+  <h2><span class="num">3.</span>Chat, the dock button that expands</h2>
+  <p class="section-sub">Chat is the leftmost dock button on every mode. Tap to expand into a full-screen chat surface. Agent can drive the OS while chat is open.</p>
+
+  <!-- SCREEN 07: Chat dock button at rest -->
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 07 &middot; DOCK BUTTON</span>
+      <h3 class="screen-card-title">Chat dock button, at rest</h3>
+      <span class="screen-card-meta">leftmost dock slot on every mode</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474;                          &#9474;
+&#9474;  (any mode's app grid)   &#9474;
+&#9474;                          &#9474;
+&#9474;     (mode-specific)      &#9474;
+&#9474;                          &#9474;
+&#9474;                          &#9474;
+&#9474;                          &#9474;
+&#9474;        (dots)            &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9488;        &#9474;
+&#9474;  &#9474;&#128172;&#9474;  &#9474;  &#9474;&#8599; &#9474;        &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9496;        &#9474;
+&#9474;     &#9651;                  &#9474;  tap target on Chat button
+&#9474;     |                    &#9474;  (the speech-bubble)
+&#9474;     this is the          &#9474;
+&#9474;     entry point           &#9474;
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen</h4>
+          <ul class="screen-list shows">
+            <li>The leftmost dock slot is the Chat button (speech-bubble glyph)</li>
+            <li>Visible on Landing (Screen 02), Agent (Screen 04, 05), Public (Screen 06)</li>
+            <li>Not visible on lockscreen (Screen 01)</li>
+            <li>No separate widget surface anywhere above the dock</li>
+            <li>Tapping the button is the only interaction</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Tap &#8594; expand chat (animation, Screen 08 transition &#8594; Screen 09 expanded)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>Resting visual: is there any state indicator (unread count, agent activity dot)?</li>
+            <li>Long-press behavior (jiggle / menu)?</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 08: Chat expand transition -->
+  <div class="screen-card transition">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 08 &middot; TRANSITION</span>
+      <h3 class="screen-card-title">Chat expand, mid-flight</h3>
+      <span class="screen-card-meta">~450ms total &middot; dock button to fullscreen</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474; &#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468; &#9474;  app icons fading out
+&#9474;                          &#9474;     scale-down 0.96
+&#9474;     &#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;&#9468;             &#9474;
+&#9474;        &#9468;&#9468;&#9468;&#9468;&#9468;&#9468;                  &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;     &#9474;  chat button growing
+&#9474;  &#9474;  (chat growing)    &#9474;     &#9474;  from its dock position
+&#9474;  &#9474;                    &#9474;     &#9474;
+&#9474;  &#9474;                    &#9474;     &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;     &#9474;
+&#9474;  &#9474; input bar forming  &#9474;     &#9474;  dock slots fading out
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9474;  input bar fading in
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's animating</h4>
+          <ul class="screen-list shows">
+            <li>App grid icons fade out + scale down (0.96), 0&ndash;150ms</li>
+            <li>Chat button grows from its dock position to full-screen (shared layoutId), 0&ndash;250ms</li>
+            <li>Dock background slides up toward input bar position, 100&ndash;300ms</li>
+            <li>Remaining dock slots (empty, Sign up) fade out, 100&ndash;300ms</li>
+            <li>Input bar fades in where dock was, 200&ndash;400ms</li>
+            <li>Back chevron + Stop button appear, 300&ndash;450ms</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Physics + reduced motion</h4>
+          <ul class="screen-list shows">
+            <li>Spring: stiffness 280, damping 28 (matches existing icon-to-app morph)</li>
+            <li>Reverse on back tap: ~400ms total</li>
+            <li>Reduced-motion: 150ms opacity crossfade, no scale</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 09: Chat expanded -->
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 09 &middot; EXPANDED</span>
+      <h3 class="screen-card-title">Chat expanded surface</h3>
+      <span class="screen-card-meta">the wow moment &middot; calls cowork-api via Next proxy</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474; &#8592;   Chat            &#8861;  &#9474;  back + title + stop
+&#9474; &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;  &#9474;
+&#9474;                          &#9474;
+&#9474;       &#9586;&#9586;                  &#9474;
+&#9474;        &#9586;&#9586;    Via         &#9474;  Via at 96px
+&#9474;       &#9585;&#9585;                  &#9474;
+&#9474;        &#9585;&#9585;                 &#9474;
+&#9474;                          &#9474;
+&#9474;   Hi, I'm Via.           &#9474;
+&#9474;   ask me anything        &#9474;
+&#9474;                          &#9474;
+&#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;  3 suggestion chips
+&#9474; &#9474; Show me what you   &#9474; &#9474;
+&#9474; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+&#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;
+&#9474; &#9474; List my files      &#9474; &#9474;
+&#9474; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+&#9474;                          &#9474;
+&#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#8594;   &#9474;  input bar (was dock)
+&#9474; &#9474; Message...      &#9474;     &#9474;
+&#9474; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9474;
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen (empty state)</h4>
+          <ul class="screen-list shows">
+            <li>NavBar: back chevron (collapses), title "Chat", Stop button</li>
+            <li>Large Via (96px, idle, bobbing)</li>
+            <li>Greeting + 3 suggestion chips</li>
+            <li>Composer input + send button at the bottom (where dock was)</li>
+            <li>No app grid, no dock, no widgets visible</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Tap suggestion chip &#8594; send that prompt</li>
+            <li>Type and send &#8594; chat turn begins</li>
+            <li>Tap Stop &#8594; <code>POST /api/chat/abort</code></li>
+            <li>Tap back chevron &#8594; collapse to Chat dock button</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Data sources</h4>
+          <ul class="screen-list data">
+            <li>Browser &#8594; <code>POST /api/chat</code> (Next route) &#8594; Next forwards to cowork-api with auth + Clerk username &#8594; <code>{stream_id, session_id}</code></li>
+            <li>Browser &#8594; <code>EventSource /api/chat/stream/{id}</code> (Next SSE proxy)</li>
+            <li>SSE events: <code>session-created</code>, <code>text-delta</code>, <code>heartbeat</code>, <code>done</code>, <code>agent-error</code>, <code>client-action</code></li>
+            <li>session_id persists to localStorage for resume on refresh</li>
+            <li>Browser never sees XO_API_KEY or cowork-api URL</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>3 demo prompts: exact wording to be written + tested</li>
+            <li>What if session expires server-side?</li>
+            <li>Pull-to-refresh behavior in chat (reset conversation?)</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 10: Agent driving the OS -->
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 10 &middot; AGENT-DRIVEN</span>
+      <h3 class="screen-card-title">Agent driving the OS via client-action</h3>
+      <span class="screen-card-meta">chat open, agent emits navigate/etc &middot; OS reframes</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474; &#8592;   Chat            &#8861;  &#9474;
+&#9474; &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;  &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9586;&#9586; Sure, opening      &#9474;
+&#9474;     your files...        &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;
+&#9474;  &#9474; client-action     &#9474; &#9474;  agent emits:
+&#9474;  &#9474; {kind:"navigate", &#9474; &#9474;  {kind:"navigate",
+&#9474;  &#9474;  route:"/files"}  &#9474; &#9474;   route:"/files"}
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+&#9474;          &#9660;                &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;  toast pill
+&#9474;  &#9474; Opening Files...  &#9474; &#9474;  while OS routes
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+&#9474;                          &#9474;
+&#9474; &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#8594;   &#9474;  user can keep typing
+&#9474; &#9474; Message...      &#9474;     &#9474;
+&#9474; &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;     &#9474;
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's happening</h4>
+          <ul class="screen-list shows">
+            <li>Chat is expanded; user asked "show me my files"</li>
+            <li>Assistant text streaming: "Sure, opening your files..."</li>
+            <li>SSE event arrives: <code>event: client-action</code> with <code>{kind:"navigate", route:"/files"}</code></li>
+            <li><code>lib/agent/actions.ts</code> dispatcher reads the action, calls <code>PhoneContext.openApp("/files")</code> + <code>router.push</code></li>
+            <li>OS routes to /files (Files cowork app) in the background</li>
+            <li>Toast shows "Opening Files..." for ~1s</li>
+            <li>When user taps back chevron: chat collapses, /files (now loaded) is visible underneath</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Action kinds supported (Section J)</h4>
+          <ul class="screen-list shows">
+            <li><code>{kind:"navigate", route:"/files"}</code> &#8594; openApp + router.push</li>
+            <li><code>{kind:"go-home"}</code> &#8594; goHome</li>
+            <li><code>{kind:"pop-back"}</code> &#8594; pop back stack</li>
+            <li><code>{kind:"open-overlay", section?}</code> &#8594; opens consolidated Overlay</li>
+            <li><code>{kind:"close-overlay"}</code></li>
+            <li><code>{kind:"collapse-chat"}</code> &#8594; closes chat surface</li>
+            <li><code>{kind:"expand-chat"}</code> &#8594; opens chat surface</li>
+            <li>Unknown kinds ignored (forward compatible)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Data sources</h4>
+          <ul class="screen-list data">
+            <li>cowork-api chat stream extended with <code>client-action</code> event type (backend work)</li>
+            <li>Phone OS subscribes to same EventSource it uses for text-delta</li>
+            <li>Action dispatcher in <code>lib/agent/actions.ts</code> maps kind &#8594; OS-level call</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>Which kinds ship in v.Next first (start with navigate / go-home / collapse-chat?)</li>
+            <li>Action timing: route immediately or wait for assistant text turn to finish?</li>
+            <li>Background sessions (stream stays open when chat collapses)?</li>
+            <li>Toast / pill UX while action fires</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Overlay -->
+  <h2><span class="num">4.</span>Overlay, three-in-one</h2>
+  <p class="section-sub">Notifications + control toggles + search collapsed into one panel, triggered by a single top swipe-down anywhere along the top edge.</p>
+
+  <div class="screen-card overlay">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 11 &middot; OVERLAY</span>
+      <h3 class="screen-card-title">Consolidated overlay panel</h3>
+      <span class="screen-card-meta">replaces Spotlight + Control + Notif &middot; one swipe-down trigger</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474; &#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;  &#9474;
+&#9474;                          &#9474;
+&#9474; Notifications            &#9474;
+&#9474;   nothing yet            &#9474;
+&#9474;                          &#9474;
+&#9474; Controls                 &#9474;
+&#9474;  &#9633; Reduced motion    &#9744; &#9474;
+&#9474;  &#9633; Theme              &#9744; &#9474;
+&#9474;  &#9633; Hide Via           &#9744; &#9474;
+&#9474;  &#9988; Wifi   &#9889; Battery   &#9474;  cosmetic tiles
+&#9474;  &#9728; Brightness         &#9474;
+&#9474;                          &#9474;
+&#9474; Search                   &#9474;
+&#9474;  &#128269; type to filter...  &#9474;  was Spotlight
+&#9474;                          &#9474;
+&#9474;     scrim &#9619;&#9619;&#9619;&#9619;&#9619;&#9619;        &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen</h4>
+          <ul class="screen-list shows">
+            <li>One panel with three sections in a single vertical scroll: Notifications, Controls, Search</li>
+            <li>Notifications section: empty state in v.Next ("nothing yet")</li>
+            <li>Controls section: reduced motion, theme placeholder, hide Via + cosmetic wifi/battery/brightness</li>
+            <li>Search section: filter all apps across all modes (was Spotlight)</li>
+            <li>Scrim behind panel</li>
+            <li><strong>No mode picker</strong> (replaced by mode swipes)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Open: swipe down from anywhere along the top 24px (full width)</li>
+            <li>Scroll vertically through sections</li>
+            <li>Tap a toggle &#8594; effect immediate</li>
+            <li>Type in Search &#8594; filter apps; tap result switches mode if needed</li>
+            <li>Scrim tap / pull up &#8594; close</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Trigger replaced</h4>
+          <ul class="screen-list nav">
+            <li>OLD: top-left swipe-down = Notifications</li>
+            <li>OLD: top-right swipe-down = Control Center</li>
+            <li>OLD: pull-down on home grid = Spotlight</li>
+            <li>NEW: ONE top swipe-down, anywhere along top, opens this combined panel</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>Section order: Notif &#8594; Controls &#8594; Search (current default) or Search-first?</li>
+            <li>Trigger zone width (24px full edge vs only-center band)?</li>
+            <li>When real notifications land, scrolling order should adapt</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 5: Auth gate -->
+  <h2><span class="num">5.</span>Sign-in gate (post-demo)</h2>
+  <p class="section-sub">Visitor experiences the OS unauthenticated, sees operator's workspace as demo. After the Via demo, sign-in is required to continue past the gate.</p>
+
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 12 &middot; AUTH GATE</span>
+      <h3 class="screen-card-title">Clerk sign-in, per-mode gate</h3>
+      <span class="screen-card-meta">fires on swipe to auth:required mode while signed out</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474;                          &#9474;
+&#9474;       &#9586;&#9586;                  &#9474;
+&#9474;        &#9586;&#9586;  Via            &#9474;
+&#9474;       &#9585;&#9585;                  &#9474;
+&#9474;        &#9585;&#9585;                 &#9474;
+&#9474;                          &#9474;
+&#9474;     Like what you've     &#9474;
+&#9474;     seen so far?         &#9474;
+&#9474;                          &#9474;
+&#9474;     Sign in to use       &#9474;
+&#9474;     XO with your own     &#9474;
+&#9474;     workspace.           &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488; &#9474;
+&#9474;  &#9474;   Sign in with    &#9474; &#9474;  Clerk-hosted CTA
+&#9474;  &#9474;       Clerk       &#9474; &#9474;
+&#9474;  &#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496; &#9474;
+&#9474;                          &#9474;
+&#9474;   skip for now           &#9474;  ghost link (optional)
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What's on screen</h4>
+          <ul class="screen-list shows">
+            <li>Via at 96px, smiling (happy expression)</li>
+            <li>Hook copy connecting to the demo experience just had</li>
+            <li>Primary CTA: "Sign in with Clerk" (modal or full-screen Clerk UI)</li>
+            <li>Optional ghost "skip for now" link (kicks user back to landing demo mode)</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Tap Sign in &#8594; Clerk-hosted sign-in flow</li>
+            <li>Successfully sign in &#8594; phone re-fetches widgets + cowork data with user's username; lands on Agent home</li>
+            <li>Skip &#8594; back to demo, but the gate re-fires next time user tries to cross it</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Triggered by</h4>
+          <ul class="screen-list nav">
+            <li>Outer pager swipe targets a mode with <code>auth: "required"</code> while no Clerk session exists</li>
+            <li>Deep link <code>?mode=agent</code> (or any required mode) while signed out</li>
+            <li>Agent <code>client-action {kind:"navigate"}</code> to a route in a required mode while signed out</li>
+            <li>On success: pager completes the queued swipe to the originally requested destination</li>
+            <li>On cancel: snap back to current public mode</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Gate UX (Section G)</h4>
+          <ul class="screen-list tbd">
+            <li>Clerk-rendered modal in the phone, full-screen Clerk page in the phone, or redirect to app.xo.builders/signin?</li>
+            <li>Default: Clerk-hosted full-screen surface inside the phone (no redirect)</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 6: Handoff -->
+  <h2><span class="num">6.</span>Handoff</h2>
+  <p class="section-sub">The exit. Sign up lives at app.xo.builders. Tapping the rightmost dock anchor opens it in a new tab so the phone keeps state.</p>
+
+  <div class="screen-card">
+    <div class="screen-card-header">
+      <span class="screen-card-num">SCREEN 13 &middot; EXIT</span>
+      <h3 class="screen-card-title">Sign up handoff</h3>
+      <span class="screen-card-meta">rightmost dock anchor on every page &middot; external link</span>
+    </div>
+    <div class="screen-body">
+<pre class="phone-frame">
+&#9484;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9488;
+&#9474; 9:41          &#9612;&#9612; &#9698;  &#9889;  &#9474;
+&#9474;       &#9472;&#9472;&#9472;&#9472;&#9472;          &#9474;
+&#9474;                          &#9474;
+&#9474;       Get your own       &#9474;
+&#9474;                          &#9474;
+&#9474;  app.xo.builders/signup  &#9474;
+&#9474;     opens in new tab     &#9474;
+&#9474;                          &#9474;
+&#9474;  phone OS keeps state    &#9474;
+&#9474;  on return               &#9474;
+&#9474;                          &#9474;
+&#9474;                          &#9474;
+&#9474;  &#9484;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9516;&#9472;&#9472;&#9488;        &#9474;
+&#9474;  &#9474;&#128172;&#9474;  &#9474;  &#9474;&#8599;&#127775;&#9474;        &#9474;  rightmost = external Sign up
+&#9474;  &#9492;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9524;&#9472;&#9472;&#9496;        &#9474;
+&#9474;          &#9472;&#9472;              &#9474;
+&#9492;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9472;&#9496;
+</pre>
+      <div class="screen-details">
+        <section>
+          <h4>What it does</h4>
+          <ul class="screen-list shows">
+            <li>Rightmost dock anchor on every mode (always-on exit)</li>
+            <li>For new visitors who decide they want their own workspace</li>
+            <li>Distinct from the Clerk sign-in (Screen 12): sign-up is a different surface that creates a new account</li>
+          </ul>
+        </section>
+        <section>
+          <h4>User can</h4>
+          <ul class="screen-list actions">
+            <li>Tap &#8594; opens app.xo.builders/signup in new tab</li>
+            <li>Return to phone tab &#8594; OS exactly where they left it</li>
+          </ul>
+        </section>
+        <section>
+          <h4>Data sources</h4>
+          <ul class="screen-list data">
+            <li><code>window.open("https://app.xo.builders/signup?utm_source=phone.xo.builders&utm_medium=phone-os", "_blank", "noopener,noreferrer")</code></li>
+          </ul>
+        </section>
+        <section>
+          <h4>Pending</h4>
+          <ul class="screen-list tbd">
+            <li>UTM scheme: per-page (utm_content=landing|agent), per-trigger?</li>
+            <li>Analytics provider for click-through</li>
+            <li>Relationship to Sign-in (Screen 12): if user already has account, do we surface "Sign in" from here too?</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <span>XO Phone, screens companion to V_NEXT_PLAN.html. One file, no dependencies. Open in any browser or print to PDF.</span>
+    <span>Last updated: 2026-05-20</span>
+  </footer>
+
+</div>
+</body>
+</html>

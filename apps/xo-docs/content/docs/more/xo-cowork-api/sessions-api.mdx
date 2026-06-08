@@ -1,0 +1,219 @@
+---
+title: Sessions API
+icon: Blocks
+description: List, search, hydrate messages, and update working directories for chat sessions.
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+
+The sessions API reads from native runtime storage (Claude Code JSONL plus OpenClaw JSONL) and exposes a unified, paginated view to the frontend. It does **not** create sessions; that happens implicitly inside `/api/chat/prompt`.
+
+## What's on disk
+
+```
+~/.openclaw/agents/                       ← OpenClaw adapter
+└── <agent_name>/
+    └── sessions/
+        ├── sessions.json                 {session_key → {sessionId, updatedAt, directory, ...}}
+        └── <session_id>.jsonl            line-per-record message log
+
+~/claude-cowork/                          ← Claude Code adapter
+└── <agent_id>/
+    └── sessions/
+        ├── sessions.json                 {session_key → {sessionId, nativeSessionId,
+        │                                                  directory, directoryHistory}}
+        └── <session_id>.jsonl
+
+(legacy fallback, read-only:)
+~/claude-cowork/<agent_id>/.sessions/<session_id>.json
+```
+
+`sessions_io.load_all_sessions()` walks both roots and merges. `seen_ids` dedupes; an OpenClaw entry wins if both report the same id.
+
+## Endpoint summary
+
+| Verb | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/sessions?limit=&offset=` | List all sessions, newest first. |
+| `GET` | `/api/sessions/search?q=&limit=&offset=` | Substring match on `title`. |
+| `GET` | `/api/sessions/{session_id}` | Get one session's metadata. |
+| `GET` | `/api/messages/{session_id}?limit=&offset=` | Paginated message hydration. |
+| `GET` | `/api/sessions/{session_id}/todos` | Stub: `{"todos": []}`. |
+| `GET` | `/api/sessions/{session_id}/files` | Stub: `{"files": []}`. |
+| `POST` | `/api/sessions` | Stub: returns a synthetic UUID. Real creation happens in `/api/chat/prompt`. |
+| `PATCH` | `/api/sessions/{session_id}` | Update `directory` for a session. |
+| `DELETE` | `/api/sessions/{session_id}` | Stub: `{"ok": true}` (no-op). |
+
+## 1. GET /api/sessions
+
+List all sessions across both runtimes, sorted by `updatedAt` descending.
+
+### Query params
+
+| Param | Type | Default | Notes |
+|---|---|---|---|
+| `limit` | int | 50 | How many to return |
+| `offset` | int | 0 | Standard pagination |
+
+### Response (200 OK)
+
+```jsonc
+{
+  "total": 137,
+  "offset": 0,
+  "sessions": [
+    {
+      "session_id":   "9d4e5f6a-...",
+      "title":        "Refactor auth middleware",
+      "agent_id":     "blackhole",
+      "agent_name":   "claude_code",
+      "updated_at":   "2026-05-10T12:34:56+00:00",
+      "directory":    "/Users/me/xo-projects/blackhole",
+      "message_count": 14
+    }
+  ]
+}
+```
+
+## 2. GET /api/sessions/search
+
+Substring match on `title` only. Case-insensitive. No body or full-text search yet (`/api/fts/index/*` is a stub).
+
+### Query params
+
+| Param | Type | Required | Notes |
+|---|---|---|---|
+| `q` | string | yes | Substring to match |
+| `limit` | int | no | Default 50 |
+| `offset` | int | no | Default 0 |
+
+Response shape matches `GET /api/sessions`.
+
+## 3. GET /api/sessions/&#123;session_id&#125;
+
+Linear scan of `load_all_sessions()` for a matching id. Returns 404 if not found.
+
+### Response (200 OK)
+
+Single session object as in the list response.
+
+## 4. GET /api/messages/&#123;session_id&#125;
+
+The frontend's main read path. Hydrates messages from native JSONL and normalizes them to a uniform message shape.
+
+### Query params
+
+| Param | Type | Default | Notes |
+|---|---|---|---|
+| `limit` | int | 50 | |
+| `offset` | int | -1 | **`-1` (default) returns the newest page**: `start = max(0, total - limit)`. Use a non-negative offset for older pages. |
+
+### Response (200 OK)
+
+```jsonc
+{
+  "total":   137,
+  "offset":  87,
+  "messages": [
+    {
+      "id":        "msg_abc...",
+      "role":      "user" | "assistant" | "tool",
+      "text":      "...",                  // for user/assistant
+      "tool_call": { ... },                // when role == "tool"
+      "tool_result": { ... },              // when role == "tool"
+      "timestamp": "2026-05-10T12:34:56+00:00"
+    }
+  ]
+}
+```
+
+The exact per-message shape varies by runtime. The conversion runs through `services.cowork_agent.messages.convert_messages()`, which normalizes Claude Code stream-json plus OpenClaw chat-completions JSONL into the same envelope.
+
+### Resolution diagram for a single fetch
+
+```
+GET /api/messages/abc-123?limit=50&offset=-1
+        │
+        ▼
+find_session_file("abc-123"):
+        ├── ~/.openclaw/agents/*/sessions/abc-123.jsonl     found? → return
+        ├── ~/claude-cowork/*/sessions/abc-123.jsonl        found? → return
+        └── claude_sessions.find_session_messages_path      legacy .sessions/<id>.json
+        │
+        ▼
+parse_jsonl(path) → list[dict]
+        │
+        ▼
+convert_messages(...) → frontend chat-bubble shape
+        │
+        ▼
+slice [start, start+limit]
+        │
+        ▼
+{total, offset, messages}
+```
+
+The "newest page" default (`offset=-1`) is what frontends typically use on first load to render the tail of a long conversation without paging through old turns.
+
+### Errors
+
+| Code | Body | Cause |
+|---|---|---|
+| 404 | `{ "detail": "Session not found" }` | No matching JSONL file in any of the searched roots |
+
+## 5. PATCH /api/sessions/&#123;session_id&#125;
+
+Update the working directory associated with a session (used by the project / workspace switcher in the UI).
+
+### Request
+
+```jsonc
+{ "directory": "/Users/me/xo-projects/other-project" }
+```
+
+### Behavior
+
+```
+1. update_session_directory(session_id, directory):
+     walk ~/.openclaw/agents/*/sessions/sessions.json,
+     find entry where meta.sessionId == session_id,
+     append {directory, selectedAt: now_ms} to meta.directoryHistory[-200:],
+     set meta.directory + meta.updatedAt,
+     json.dump back atomically.
+2. If not found, fall through to update_claude_session_directory
+   (same shape but in ~/claude-cowork/* tree, with legacy `.sessions/{id}.json` fallback).
+3. 404 if neither layout has it.
+```
+
+### Response (200 OK)
+
+```jsonc
+{ "ok": true }
+```
+
+## 6. Stubs
+
+These exist so the frontend's wiring doesn't 404. None of them touch disk.
+
+```
+GET    /api/sessions/{id}/todos      → {"todos": []}
+GET    /api/sessions/{id}/files      → {"files": []}
+POST   /api/sessions                 → returns a synthetic uuid
+DELETE /api/sessions/{id}            → {"ok": true}
+```
+
+Real session creation is implicit in `POST /api/chat/prompt`. There is no explicit session-creation endpoint.
+
+## Recommended frontend pattern
+
+For a chat UI:
+
+1. On app load, call `GET /api/sessions?limit=50&offset=0` for the sidebar.
+2. When the user opens a session, call `GET /api/messages/{session_id}` (default `offset=-1`) to render the tail.
+3. When they scroll up, call `GET /api/messages/{session_id}?limit=50&offset=<computed>` to page backward.
+4. After the user sends a turn, hold the local optimistic deltas from SSE; once `event: done` arrives, you can re-fetch `GET /api/messages/{session_id}` to canonicalize.
+5. To switch the working directory, call `PATCH /api/sessions/{session_id}` and refresh the session metadata.
+
+<Callout type="info">
+The `convert_messages()` shape is the source of truth for what your UI renders. If you build new tools or message types, normalize them server-side rather than special-casing on the frontend.
+</Callout>

@@ -1,0 +1,34 @@
+---
+title: Setup
+description: Configure your agent's models, data sources, and channels from the Setup tab.
+icon: Settings
+---
+
+import { Cards, Card } from "@/components/card";
+
+The **Setup** tab in your XO project page is where you configure your agent post-provisioning. Connect a model provider, give your agent access to your data, and reach it from your messaging apps.
+
+---
+
+## Configure Your Agent
+
+<Cards>
+	<Card
+		icon={<span className="icon-[ph--cpu-fill] size-4.5 text-green-400" />}
+		title="Models"
+		description="Connect Anthropic, OpenAI, or OpenRouter via API key — or use OAuth with your Claude/ChatGPT subscription."
+		href="/setup/models"
+	/>
+	<Card
+		icon={<span className="icon-[ph--database-fill] size-4.5 text-green-400" />}
+		title="Data Sources"
+		description="Connect Google Drive, OneDrive, GitHub, or Vercel so your agent can read from them."
+		href="/setup/data"
+	/>
+	<Card
+		icon={<span className="icon-[ph--chat-circle-fill] size-4.5 text-green-400" />}
+		title="Channels"
+		description="Bring your agent to Telegram or Slack."
+		href="/setup/channels"
+	/>
+</Cards>

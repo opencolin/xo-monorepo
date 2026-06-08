@@ -1,0 +1,12 @@
+{
+  "title": "OpenClaw",
+  "icon": "OpenClaw",
+  "pages": [
+    "setup",
+    "restart-gateway",
+    "channels",
+    "models",
+    "integrations",
+    "skills"
+  ]
+}

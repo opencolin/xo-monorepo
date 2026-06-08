@@ -1,0 +1,17 @@
+{
+  "title": "XO Cowork API",
+  "icon": "XoCowork",
+  "pages": [
+    "overview",
+    "auth-api",
+    "chat-api",
+    "files-api",
+    "sessions-api",
+    "secrets-api",
+    "agents-api",
+    "config-api",
+    "connectors-api",
+    "usage-api",
+    "frontend-integration"
+  ]
+}

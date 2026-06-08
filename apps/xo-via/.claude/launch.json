@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "next-dev",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "port": 18002,
+      "autoPort": false
+    },
+    {
+      "name": "next-start",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["start"],
+      "port": 18002,
+      "autoPort": false
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "title": "XO Launchpad",
+  "pages": [
+    "quickstart",
+    "overview",
+    "templates",
+    "no-code-deployment",
+    "sample-docker-files"
+  ]
+}
