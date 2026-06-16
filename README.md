@@ -153,6 +153,8 @@ cd services/ethcc-hack-xo-ember && pip install -r requirements.txt && python xo_
 
 Each subproject keeps its **original README** and `.claude/` config in place — start there for project‑specific detail.
 
+- **Repo navigator:** a monorepo‑wide [`xo` skill](.claude/skills/xo/SKILL.md) routes "I want to work on X" to the right directory, run command, port, and the matching bundled project‑skill. It auto‑loads when Claude Code is rooted at the repo.
+
 ## Provenance
 
 Assembled from 16 repositories under [`github.com/sharmasuraj0123`](https://github.com/sharmasuraj0123). Individual git histories were flattened (nested `.git` directories removed) so this is a single, self‑contained repository. See each subdirectory's README and the **Source** links above to trace anything back to its origin.

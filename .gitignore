@@ -38,7 +38,9 @@ npm-debug.log*
 pnpm-debug.log*
 
 # ── Tooling / local session (root only; per-app .claude/ is kept) ─
-/.claude/
+# Ignore local session config at the root, but track intentional skills.
+/.claude/*
+!/.claude/skills/
 
 # ── OS / editors ─────────────────────────────────────────────
 .DS_Store
